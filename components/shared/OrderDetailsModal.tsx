@@ -63,7 +63,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ order, onClose })
             <p className="text-sm"><strong>Últ. Att. Status:</strong> {new Date(order.last_status_change_time).toLocaleString()}</p> {/* Sub-detail font size adjusted */}
             <p className="text-sm"><strong>Prog. Automático:</strong> {order.auto_progress ? 'Ativo' : 'Desativado'}</p> {/* Sub-detail font size adjusted */}
             {order.auto_progress && order.next_auto_transition_time &&
-                <p className="text-sm"><strong>Próx. Transição:</strong> {new Date(order.next_auto_transition_time).toLocaleTimeString()}</p> {/* Sub-detail font size adjusted */}
+                <p className="text-sm"><strong>Próx. Transição:</strong> {new Date(order.next_auto_transition_time).toLocaleTimeString()}</p>
             }
         </div>
         <div>
