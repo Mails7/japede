@@ -56,7 +56,7 @@ const Alert: React.FC<AlertProps> = ({ message, type, onClose, duration }) => {
               type === 'error' ? 'hover:bg-red-100 focus:ring-red-500' : 
               'hover:bg-blue-100 focus:ring-blue-500'
             }`}
-            aria-label="Dismiss"
+            aria-label="Fechar"
           >
             <XIcon className={`h-5 w-5 ${ type === 'success' ? 'text-green-500' : type === 'error' ? 'text-red-500' : 'text-blue-500'}`} />
           </button>

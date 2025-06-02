@@ -16,17 +16,6 @@ export const DEFAULT_PIZZA_IMAGE = 'https://picsum.photos/seed/pizza-default/400
 // Client-side ID generation, e.g. for cart items before they become order items
 export const generateId = (): string => Date.now().toString(36) + Math.random().toString(36).substring(2, 9);
 
-// Durations for each status in milliseconds (client-side logic if used for UI timers)
-// FIX: Using aliased AppOrderStatus and ensuring all enum members are covered.
-export const ORDER_STATUS_DURATIONS: Record<AppOrderStatus, number> = {
-  [AppOrderStatus.PENDING]: 30 * 1000, // 30 seconds
-  [AppOrderStatus.PREPARING]: 3 * 60 * 1000, // 3 minutes
-  [AppOrderStatus.READY_FOR_PICKUP]: 2 * 60 * 1000, // 2 minutes
-  [AppOrderStatus.OUT_FOR_DELIVERY]: (35 + 5) * 60 * 1000, // 35 minutes delivery + 5 minutes pause = 40 minutes total
-  [AppOrderStatus.DELIVERED]: 0, 
-  [AppOrderStatus.CANCELLED]: 0,
-};
-
 // Defines the sequence of automatic progression
 // FIX: Using aliased AppOrderStatus.
 export const ORDER_PROGRESSION_SEQUENCE: Partial<Record<AppOrderStatus, AppOrderStatus>> = {
@@ -50,7 +39,7 @@ export const PAYMENT_METHODS: { value: PaymentMethod; label: string }[] = [
   { value: PaymentMethod.CARTAO_DEBITO, label: 'Cartão de Débito' },
   { value: PaymentMethod.CARTAO_CREDITO, label: 'Cartão de Crédito' },
   { value: PaymentMethod.PIX, label: 'PIX' },
-  { value: PaymentMethod.MULTIPLO, label: 'Múltiplos/Dividido (Em breve)' },
+  { value: PaymentMethod.MULTIPLO, label: 'Múltiplos/Dividido' },
 ];
 
 // For OrderDashboardPage column headers

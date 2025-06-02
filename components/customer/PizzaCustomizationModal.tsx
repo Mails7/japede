@@ -4,7 +4,7 @@ import { MenuItem, PizzaSize, PizzaCrust, CartItem } from '../../types';
 import { useAppContext } from '../../contexts/AppContext';
 import Modal from '../shared/Modal';
 import { generateId, DEFAULT_PIZZA_IMAGE } from '../../constants';
-import { PlusIcon, CheckCircleIcon } from '../icons';
+import { PlusIcon, CheckCircleIcon, XIcon as QuantityMinusIcon, PlusIcon as QuantityPlusIcon } from '../icons'; // Changed MinusIcon to XIcon
 
 interface PizzaCustomizationModalProps {
   pizzaItem: MenuItem;
@@ -21,34 +21,46 @@ const PizzaCustomizationModal: React.FC<PizzaCustomizationModalProps> = ({ pizza
   const [secondHalfFlavor, setSecondHalfFlavor] = useState<MenuItem | null>(null);
   const [quantity, setQuantity] = useState(1);
 
-  // Initialize default selections
   useEffect(() => {
     if (pizzaItem.sizes && pizzaItem.sizes.length > 0) {
       const defaultSize = pizzaItem.sizes[0];
       setSelectedSize(defaultSize);
-      // Set default crust for the default size
       if (defaultSize.crusts && defaultSize.crusts.length > 0) {
         const defaultCrustForSize = defaultSize.crusts.find(c => c.additionalPrice === 0) || defaultSize.crusts[0];
         setSelectedCrust(defaultCrustForSize);
       } else {
-        setSelectedCrust(null); // No crusts for this size
+        setSelectedCrust(null);
       }
+    } else {
+        // If pizzaItem itself doesn't have sizes (which it should if item_type is 'pizza'),
+        // try to find a default size if available globally, or handle error.
+        // For now, assume pizzaItem.sizes is populated if it's a pizza.
+        setSelectedSize(null);
+        setSelectedCrust(null);
     }
-    setFirstHalfFlavor(pizzaItem); 
-    setIsHalfAndHalf(false); 
-    setSecondHalfFlavor(null); 
+    setFirstHalfFlavor(pizzaItem);
+    setIsHalfAndHalf(false);
+    setSecondHalfFlavor(null);
+    setQuantity(1);
   }, [pizzaItem]);
 
-  // Update selectedCrust when selectedSize changes
   useEffect(() => {
-    if (selectedSize && selectedSize.crusts && selectedSize.crusts.length > 0) {
-      const defaultCrustForSize = selectedSize.crusts.find(c => c.additionalPrice === 0) || selectedSize.crusts[0];
-      setSelectedCrust(defaultCrustForSize);
+    if (selectedSize) {
+      if (selectedSize.crusts && selectedSize.crusts.length > 0) {
+        const defaultCrustForSize = selectedSize.crusts.find(c => c.additionalPrice === 0) || selectedSize.crusts[0];
+        setSelectedCrust(defaultCrustForSize);
+      } else {
+        setSelectedCrust(null);
+      }
     } else {
-      setSelectedCrust(null); // No crusts for this size, or no size selected
+        setSelectedCrust(null);
+    }
+    // Reset half-and-half if size changes to avoid inconsistent state
+    if (isHalfAndHalf) {
+        setIsHalfAndHalf(false);
+        setSecondHalfFlavor(null);
     }
   }, [selectedSize]);
-
 
   const availablePizzaFlavors = useMemo(() => {
     return menuItems.filter(
@@ -59,31 +71,27 @@ const PizzaCustomizationModal: React.FC<PizzaCustomizationModalProps> = ({ pizza
   const calculatedPrice = useMemo(() => {
     if (!selectedSize) return 0;
 
-    let basePrice = 0;
-    if (isHalfAndHalf && firstHalfFlavor && secondHalfFlavor && selectedSize) {
-        // For half-and-half, the price of the size is determined by the more expensive half.
-        // We need to find the price of each flavor *for the selected size*.
-        // This assumes that flavors (which are MenuItems) also have `sizes` array.
-        const firstFlavorSizeData = firstHalfFlavor.sizes?.find(s => s.id === selectedSize.id || s.name === selectedSize.name); // Match by id or name
-        const secondFlavorSizeData = secondHalfFlavor.sizes?.find(s => s.id === selectedSize.id || s.name === selectedSize.name);
+    let basePriceForSelectedSize = 0;
+
+    if (isHalfAndHalf && firstHalfFlavor && secondHalfFlavor) {
+        const firstFlavorPriceData = firstHalfFlavor.sizes?.find(s => s.id === selectedSize.id || s.name === selectedSize.name);
+        const secondFlavorPriceData = secondHalfFlavor.sizes?.find(s => s.id === selectedSize.id || s.name === selectedSize.name);
         
-        if (firstFlavorSizeData && secondFlavorSizeData) {
-            basePrice = Math.max(firstFlavorSizeData.price, secondFlavorSizeData.price);
-        } else if (firstFlavorSizeData) { 
-            basePrice = firstFlavorSizeData.price;
-        } else if (secondFlavorSizeData) { // If firstHalfFlavor IS pizzaItem, and it doesn't have specific sizes listed itself but secondFlavor does
-            basePrice = secondFlavorSizeData.price;
-        } else { // Fallback to selectedSize's own price if flavor specific sizes not found (should not happen if configured correctly)
-            basePrice = selectedSize.price; 
-        }
-    } else if (firstHalfFlavor && selectedSize) { // Single flavor
-        // Use the price of the firstHalfFlavor for the selectedSize
-        const flavorSizeData = firstHalfFlavor.sizes?.find(s => s.id === selectedSize.id || s.name === selectedSize.name);
-        basePrice = flavorSizeData ? flavorSizeData.price : selectedSize.price; // Fallback to selectedSize's price
+        const price1 = firstFlavorPriceData?.price || 0;
+        const price2 = secondFlavorPriceData?.price || 0;
+
+        if (price1 === 0 && price2 === 0) basePriceForSelectedSize = selectedSize.price; // Fallback
+        else basePriceForSelectedSize = Math.max(price1, price2);
+
+    } else if (firstHalfFlavor) {
+        const flavorPriceData = firstHalfFlavor.sizes?.find(s => s.id === selectedSize.id || s.name === selectedSize.name);
+        basePriceForSelectedSize = flavorPriceData?.price || selectedSize.price; // Fallback
+    } else {
+        basePriceForSelectedSize = selectedSize.price; // Fallback if firstHalfFlavor is somehow not set
     }
     
-    const crustPrice = selectedCrust ? selectedCrust.additionalPrice : 0;
-    return (basePrice + crustPrice) * quantity;
+    const crustPrice = selectedCrust?.additionalPrice || 0;
+    return (basePriceForSelectedSize + crustPrice) * quantity;
   }, [selectedSize, selectedCrust, isHalfAndHalf, firstHalfFlavor, secondHalfFlavor, quantity]);
 
   const handleAddToCart = () => {
@@ -102,185 +110,167 @@ const PizzaCustomizationModal: React.FC<PizzaCustomizationModalProps> = ({ pizza
     }
     if (selectedSize) cartItemName += ` (${selectedSize.name})`;
     
-    // Add crust name only if a crust is selected and it has a name (it might be "Sem Borda" with price 0)
     if (selectedCrust && selectedCrust.name) {
-        if (selectedCrust.additionalPrice > 0 || (selectedCrust.additionalPrice === 0 && selectedCrust.name.toLowerCase() !== "sem borda" && selectedCrust.name.toLowerCase() !== "borda padrão")) {
-             cartItemName += ` - ${selectedCrust.name}`;
-        } else if (selectedCrust.additionalPrice === 0 && (selectedCrust.name.toLowerCase() === "sem borda" || selectedCrust.name.toLowerCase() === "borda padrão")) {
-            // Optionally, don't add "Sem borda" or "Borda Padrão" if it's free and implied
-        } else {
-             cartItemName += ` - Borda ${selectedCrust.name}`; // Fallback for other free crusts
-        }
+      // Only add crust name if it's not a "default" or "no crust" type with zero price
+      const crustNameLower = selectedCrust.name.toLowerCase();
+      if (selectedCrust.additionalPrice > 0 || (selectedCrust.additionalPrice === 0 && crustNameLower !== "sem borda" && crustNameLower !== "borda padrão" && crustNameLower !== "tradicional")) {
+           cartItemName += ` - Borda ${selectedCrust.name}`;
+      }
     }
 
+    const unitPrice = calculatedPrice / quantity;
 
-    const firstFlavorPriceForSize = firstHalfFlavor.sizes?.find(s => s.id === selectedSize.id || s.name === selectedSize.name)?.price || selectedSize.price;
-    const secondFlavorPriceForSize = isHalfAndHalf && secondHalfFlavor 
-        ? (secondHalfFlavor.sizes?.find(s => s.id === selectedSize.id || s.name === selectedSize.name)?.price || selectedSize.price) 
-        : undefined;
-
-    const newCartItem: CartItem = {
-      id: generateId(), 
-      menuItemId: firstHalfFlavor.id, 
+    const cartItemToAdd: CartItem = {
+      id: generateId(),
+      menuItemId: firstHalfFlavor.id, // The primary item ID reference
       name: cartItemName,
-      price: calculatedPrice / quantity, 
-      quantity,
+      price: unitPrice, 
+      quantity: quantity,
       imageUrl: firstHalfFlavor.image_url || DEFAULT_PIZZA_IMAGE,
       itemType: 'pizza',
       selectedSize: selectedSize,
       selectedCrust: selectedCrust || undefined,
-      isHalfAndHalf: isHalfAndHalf,
-      firstHalfFlavor: { 
-        menuItemId: firstHalfFlavor.id, 
-        name: firstHalfFlavor.name, 
-        priceForSize: firstFlavorPriceForSize,
-        imageUrl: firstHalfFlavor.image_url 
+      isHalfAndHalf: isHalfAndHalf && !!secondHalfFlavor,
+      firstHalfFlavor: {
+        menuItemId: firstHalfFlavor.id,
+        name: firstHalfFlavor.name,
+        priceForSize: firstHalfFlavor.sizes?.find(s => s.id === selectedSize.id)?.price || selectedSize.price,
+        imageUrl: firstHalfFlavor.image_url,
       },
-      secondHalfFlavor: isHalfAndHalf && secondHalfFlavor ? { 
-        menuItemId: secondHalfFlavor.id, 
+      secondHalfFlavor: (isHalfAndHalf && secondHalfFlavor && selectedSize) ? {
+        menuItemId: secondHalfFlavor.id,
         name: secondHalfFlavor.name,
-        priceForSize: secondFlavorPriceForSize || 0, 
-        imageUrl: secondHalfFlavor.image_url
+        priceForSize: secondHalfFlavor.sizes?.find(s => s.id === selectedSize.id)?.price || selectedSize.price,
+        imageUrl: secondHalfFlavor.image_url,
       } : undefined,
     };
 
-    addRawCartItem(newCartItem);
+    addRawCartItem(cartItemToAdd);
     setAlert({ message: `${cartItemName} adicionada ao carrinho!`, type: 'success' });
     onClose();
   };
 
-  if (!pizzaItem || pizzaItem.item_type !== 'pizza' || !pizzaItem.sizes || pizzaItem.sizes.length === 0) {
-    return (
-      <Modal title="Erro" onClose={onClose}>
-        <p>Item de pizza inválido ou não configurado corretamente.</p>
-      </Modal>
-    );
-  }
-  
   return (
     <Modal title={`Montar Pizza: ${pizzaItem.name}`} onClose={onClose}>
-      <div className="space-y-4 max-h-[70vh] overflow-y-auto p-1">
-        {/* Size Selection */}
+      <div className="space-y-4 text-sm sm:text-base">
+        <img 
+          src={pizzaItem.image_url || DEFAULT_PIZZA_IMAGE} 
+          alt={pizzaItem.name} 
+          className="w-full h-48 object-cover rounded-lg shadow-md mb-3"
+          onError={(e) => (e.currentTarget.src = DEFAULT_PIZZA_IMAGE)}
+        />
+
+        {/* Tamanho */}
         <div>
-          <h3 className="text-lg font-semibold text-gray-700 mb-2">1. Escolha o Tamanho:</h3>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Tamanho*</label>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            {pizzaItem.sizes.map(size => (
+            {pizzaItem.sizes?.map(size => (
               <button
                 key={size.id}
+                type="button"
                 onClick={() => setSelectedSize(size)}
-                className={`p-3 border rounded-lg text-sm text-center transition-all duration-150 ease-in-out
-                  ${selectedSize?.id === size.id 
-                    ? 'bg-primary text-white ring-2 ring-primary-dark shadow-md' 
-                    : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`}
+                className={`p-2 border rounded-md text-xs sm:text-sm transition-all ${selectedSize?.id === size.id ? 'bg-primary text-white ring-2 ring-primary-dark shadow-md' : 'bg-gray-50 hover:bg-gray-100'}`}
               >
-                <p className="font-semibold">{size.name}</p>
-                <p>R$ {size.price.toFixed(2).replace('.', ',')}</p>
+                {size.name} (R$ {size.price.toFixed(2)})
               </button>
             ))}
           </div>
         </div>
 
-        {/* Crust Selection - Now from selectedSize.crusts */}
+        {/* Borda */}
         {selectedSize && selectedSize.crusts && selectedSize.crusts.length > 0 && (
           <div>
-            <h3 className="text-lg font-semibold text-gray-700 mb-2">2. Escolha a Borda (para {selectedSize.name}):</h3>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Borda (para {selectedSize.name})</label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {selectedSize.crusts.map(crust => (
                 <button
                   key={crust.id}
+                  type="button"
                   onClick={() => setSelectedCrust(crust)}
-                  className={`p-3 border rounded-lg text-sm text-center transition-all duration-150 ease-in-out
-                    ${selectedCrust?.id === crust.id 
-                      ? 'bg-primary text-white ring-2 ring-primary-dark shadow-md' 
-                      : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`}
+                  className={`p-2 border rounded-md text-xs sm:text-sm transition-all ${selectedCrust?.id === crust.id ? 'bg-secondary text-white ring-1 ring-secondary-dark shadow-sm' : 'bg-gray-50 hover:bg-gray-100'}`}
                 >
-                  <p className="font-semibold">{crust.name}</p>
-                  <p>{crust.additionalPrice > 0 ? `+ R$ ${crust.additionalPrice.toFixed(2).replace('.', ',')}` : 'Grátis'}</p>
+                  {crust.name} (+R$ {crust.additionalPrice.toFixed(2)})
                 </button>
               ))}
             </div>
           </div>
         )}
-         {selectedSize && (!selectedSize.crusts || selectedSize.crusts.length === 0) && (
-            <div>
-                <h3 className="text-lg font-semibold text-gray-700 mb-1">2. Borda:</h3>
-                <p className="text-sm text-gray-500 italic">Nenhuma opção de borda para o tamanho {selectedSize.name}.</p>
-            </div>
-        )}
-
-
-        {/* Half-and-Half Selection */}
+        
+        {/* Meia a Meia */}
         {pizzaItem.allow_half_and_half && (
-          <div>
-            <h3 className="text-lg font-semibold text-gray-700 mb-2">3. Sabores:</h3>
-            <label className={`flex items-center space-x-2 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer 
-                            ${isHalfAndHalf ? 'bg-primary-light/10 border-primary' : 'bg-white'}`}>
-              <input
-                type="checkbox"
-                checked={isHalfAndHalf}
-                onChange={e => {
-                  setIsHalfAndHalf(e.target.checked);
-                  if (!e.target.checked) setSecondHalfFlavor(null); 
+          <div className="pt-2">
+            <label className="flex items-center space-x-2 cursor-pointer">
+              <input 
+                type="checkbox" 
+                checked={isHalfAndHalf} 
+                onChange={(e) => {
+                    setIsHalfAndHalf(e.target.checked);
+                    if (!e.target.checked) setSecondHalfFlavor(null);
                 }}
-                className="h-5 w-5 text-primary rounded border-gray-300 focus:ring-primary"
+                className="form-checkbox h-4 w-4 text-primary rounded border-gray-300 focus:ring-primary"
               />
-              <span className={`font-medium ${isHalfAndHalf ? 'text-primary-dark' : 'text-gray-700'}`}>Quero Meia a Meia (dois sabores)</span>
+              <span className="text-sm font-medium text-gray-700">Pedir Meia a Meia?</span>
             </label>
-
             {isHalfAndHalf && (
-              <div className="mt-3 space-y-3">
-                <div className="p-3 border rounded-md bg-gray-50">
-                  <p className="text-sm font-medium text-gray-600">1º Sabor (Principal):</p>
-                  <p className="text-md font-semibold text-gray-800">{firstHalfFlavor.name}</p>
-                </div>
-                <div>
-                  <label htmlFor="secondFlavor" className="block text-sm font-medium text-gray-600 mb-1">2º Sabor:</label>
-                  {availablePizzaFlavors.length > 0 ? (
-                    <select
-                        id="secondFlavor"
-                        value={secondHalfFlavor?.id || ''}
-                        onChange={e => {
-                            const selected = availablePizzaFlavors.find(p => p.id === e.target.value);
-                            setSecondHalfFlavor(selected || null);
-                        }}
-                        className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary bg-white"
-                        required={isHalfAndHalf}
-                    >
-                        <option value="" disabled>Selecione o segundo sabor</option>
-                        {availablePizzaFlavors.map(flavor => (
-                        <option key={flavor.id} value={flavor.id}>{flavor.name}</option>
-                        ))}
-                    </select>
-                  ) : (
-                    <p className="text-sm text-gray-500 italic">Nenhum outro sabor disponível para meia a meia no momento.</p>
-                  )}
-                </div>
+              <div className="mt-2 pl-2">
+                <p className="text-xs text-gray-600 mb-1">1º Sabor: {firstHalfFlavor.name}</p>
+                <label htmlFor="secondFlavor" className="block text-xs font-medium text-gray-700 mb-0.5">2º Sabor*</label>
+                <select 
+                  id="secondFlavor" 
+                  value={secondHalfFlavor?.id || ''} 
+                  onChange={e => {
+                    const selectedId = e.target.value;
+                    setSecondHalfFlavor(menuItems.find(item => item.id === selectedId) || null);
+                  }}
+                  className="block w-full px-2 py-1.5 border border-gray-300 bg-white rounded-md shadow-sm text-xs focus:ring-primary focus:border-primary"
+                >
+                  <option value="" disabled>Selecione o segundo sabor</option>
+                  {availablePizzaFlavors.map(flavor => (
+                    <option key={flavor.id} value={flavor.id}>{flavor.name}</option>
+                  ))}
+                </select>
+                {availablePizzaFlavors.length === 0 && <p className="text-xs text-red-500 mt-1">Nenhum outro sabor compatível disponível para meia a meia.</p>}
               </div>
             )}
           </div>
         )}
 
-        {/* Quantity */}
-        <div className="flex items-center space-x-3">
-            <h3 className="text-lg font-semibold text-gray-700">Quantidade:</h3>
-            <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="p-1 border rounded-full hover:bg-gray-200">-</button>
-            <span className="text-lg font-medium">{quantity}</span>
-            <button onClick={() => setQuantity(q => q + 1)} className="p-1 border rounded-full hover:bg-gray-200">+</button>
+        {/* Quantidade */}
+        <div className="flex items-center justify-between pt-2">
+          <label className="text-sm font-medium text-gray-700">Quantidade:</label>
+          <div className="flex items-center space-x-2">
+            <button type="button" onClick={() => setQuantity(q => Math.max(1, q - 1))} className="p-1.5 border rounded-md hover:bg-gray-100 text-gray-600 disabled:opacity-50" disabled={quantity <= 1} aria-label="Diminuir quantidade">
+              <QuantityMinusIcon className="w-4 h-4" />
+            </button>
+            <span className="text-base font-medium w-8 text-center">{quantity}</span>
+            <button type="button" onClick={() => setQuantity(q => q + 1)} className="p-1.5 border rounded-md hover:bg-gray-100 text-gray-600" aria-label="Aumentar quantidade">
+              <QuantityPlusIcon className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
-        {/* Total Price & Add to Cart Button */}
-        <div className="mt-6 pt-4 border-t">
-          <div className="flex justify-between items-center mb-3">
-            <span className="text-xl font-semibold text-gray-800">Total:</span>
-            <span className="text-2xl font-bold text-primary">R$ {calculatedPrice.toFixed(2).replace('.', ',')}</span>
+        {/* Preço e Botão Adicionar */}
+        <div className="border-t pt-3 mt-3">
+          <p className="text-lg sm:text-xl font-bold text-gray-800 text-right mb-3">
+            Total: R$ {calculatedPrice.toFixed(2).replace('.', ',')}
+          </p>
+          <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded-md shadow-sm"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={handleAddToCart}
+              disabled={!selectedSize || (isHalfAndHalf && !secondHalfFlavor)}
+              className="flex items-center justify-center px-5 py-2.5 text-sm font-semibold text-white bg-primary hover:bg-primary-dark rounded-md shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              <CheckCircleIcon className="w-5 h-5 mr-2"/> Adicionar ao Carrinho
+            </button>
           </div>
-          <button
-            onClick={handleAddToCart}
-            disabled={!selectedSize || (isHalfAndHalf && !secondHalfFlavor)}
-            className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition-colors duration-150 ease-in-out flex items-center justify-center text-lg disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <PlusIcon className="w-6 h-6 mr-2"/> Adicionar ao Carrinho
-          </button>
         </div>
       </div>
     </Modal>

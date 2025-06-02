@@ -3,21 +3,35 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 console.log('[SupabaseClient] Initializing Supabase client...');
 
-// IMPORTANT: These values are hardcoded based on your request for this specific AI interaction.
-// In a real-world application, these MUST come from environment variables
-// (e.g., process.env.REACT_APP_SUPABASE_URL or window._env_.SUPABASE_URL if injected at runtime).
-// DO NOT commit hardcoded keys to your repository.
-const supabaseUrl = (window as any).SUPABASE_URL;
-const supabaseAnonKey = (window as any).SUPABASE_ANON_KEY;
+// --- IMPORTANT FOR TYPESCRIPT ---
+// If TypeScript shows errors like "Property 'env' does not exist on type 'ImportMeta'",
+// it's because the TypeScript configuration is missing Vite's client types.
+// The correct fix is to ensure your `tsconfig.json` includes "vite/client"
+// in `compilerOptions.types`.
+// For example:
+// {
+//   "compilerOptions": {
+//     "types": ["vite/client", "node"] // Ensure "vite/client" is present
+//   }
+// }
+// And ensure you have a `.env` file in your project root with:
+// NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+// NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+// --- IMPORTANT FOR TYPESCRIPT ---
 
-console.log(`[SupabaseClient] SUPABASE_URL from window: ${supabaseUrl ? 'Loaded' : 'MISSING!'}`);
-console.log(`[SupabaseClient] SUPABASE_ANON_KEY from window: ${supabaseAnonKey ? 'Loaded' : 'MISSING!'}`);
+const env = (import.meta as any).env; // Safely get the env object
 
+// Changed to use NEXT_PUBLIC_ prefixes
+const supabaseUrl = env ? env.NEXT_PUBLIC_SUPABASE_URL : undefined;
+const supabaseAnonKey = env ? env.NEXT_PUBLIC_SUPABASE_ANON_KEY : undefined;
+
+console.log(`[SupabaseClient] NEXT_PUBLIC_SUPABASE_URL from import.meta.env: ${supabaseUrl ? 'Loaded' : 'MISSING!'}`);
+console.log(`[SupabaseClient] NEXT_PUBLIC_SUPABASE_ANON_KEY from import.meta.env: ${supabaseAnonKey ? 'Loaded' : 'MISSING!'}`);
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  const message = 'Supabase URL or Anon Key is missing from window object. Cannot initialize Supabase client. Ensure window.SUPABASE_URL and window.SUPABASE_ANON_KEY are set in index.html before this script runs.';
+  // Updated error message to reflect NEXT_PUBLIC_ prefixes
+  const message = 'URL ou Chave Anon do Supabase ausentes. Garanta que NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY estão definidas no seu arquivo .env e que sua configuração Vite está correta.';
   console.error(`[SupabaseClient] CRITICAL ERROR: ${message}`);
-  alert(message); 
   throw new Error(message);
 }
 
@@ -31,7 +45,7 @@ export function getArray<T>(data: T | T[] | null): T[] {
 }
 
 // Extremely cautious string conversion
-const ultraSafeString = (val: any, defaultString: string = '[Unconvertible Value]'): string => {
+const ultraSafeString = (val: any, defaultString: string = '[Valor Não Convertível]'): string => {
   try {
     if (val === null) return 'null';
     if (val === undefined) return 'undefined';
@@ -45,19 +59,19 @@ const ultraSafeString = (val: any, defaultString: string = '[Unconvertible Value
             return JSON.stringify(val, (key, value) => {
                 if (typeof value === 'object' && value !== null) {
                     if (cache.has(value)) {
-                        return '[Circular Reference]';
+                        return '[Referência Circular]';
                     }
                     cache.add(value);
                 }
                 return value;
-            }, 2); 
+            }, 2);
         } catch (jsonError) {
-            return String(val); 
+            return String(val);
         }
     }
     return String(val);
   } catch (e) {
-    return defaultString + ` (Conversion failed: ${ (e instanceof Error) ? e.message : 'unknown reason'})`;
+    return defaultString + ` (Conversão falhou: ${ (e instanceof Error) ? e.message : 'razão desconhecida'})`;
   }
 };
 
@@ -76,7 +90,7 @@ export function handleSupabaseError({ error: errorParam, customMessage }: { erro
   let isRLSViolation = false;
   let rlsTableName: string | null = null;
 
-  if (!errorParam) { 
+  if (!errorParam) {
     errorDetails = 'Nenhum objeto de erro foi fornecido ao manipulador.';
     try {
       console.warn(`HANDLER_LOGIC (FALSY_PATH): errorParam was falsy. Value:`, errorParam, `Type: ${typeof errorParam}. Operation description: "${operationDescription}"`);

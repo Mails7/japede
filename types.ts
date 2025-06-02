@@ -23,8 +23,8 @@ export enum PaymentMethod {
 }
 
 export enum CashRegisterSessionStatus {
-  OPEN = 'open',
-  CLOSED = 'closed',
+  OPEN = 'aberto',
+  CLOSED = 'fechado',
 }
 
 export interface CashRegisterSession {
@@ -58,8 +58,8 @@ export interface RawCashRegisterSession {
 }
 
 export enum CashAdjustmentType {
-  ADD = 'add',
-  REMOVE = 'remove',
+  ADD = 'adicionar',
+  REMOVE = 'remover',
 }
 
 export interface CashAdjustment {
@@ -144,7 +144,7 @@ export interface OrderItem {
 
 export interface Order {
   id: string; 
-  customer_id?: string | null; // Link to auth.users ID (via profiles table)
+  customer_id?: string | null; 
   customer_name: string;
   customer_phone?: string;
   customer_address?: string;
@@ -256,7 +256,7 @@ export interface RawMenuItem {
 
 export interface RawOrder {
   id: string; 
-  customer_id?: string | null; // Link to auth.users ID (via profiles table)
+  customer_id?: string | null; 
   customer_name: string;
   customer_phone?: string;
   customer_address?: string;
@@ -320,20 +320,61 @@ export interface ActiveTableOrderData {
     notes?: string; 
 }
 
-// --- Customer Auth & Profile ---
-import { User as SupabaseAuthUser } from '@supabase/supabase-js';
-
-export type SupabaseUser = SupabaseAuthUser;
-
+// Re-added placeholder/basic Profile type
 export interface Profile {
-  id: string; // Must match auth.users.id
+  id: string;
+  user_id?: string; // Link to Supabase Auth user
   full_name?: string | null;
   phone?: string | null;
+  email?: string | null; // Denormalized from auth.users for easier access
   default_address?: string | null;
   default_address_reference?: string | null;
+  notes?: string | null;
   created_at?: string;
   updated_at?: string;
+  // For CustomerManagementPage view model (these might not be directly from DB)
+  lastOrderDate?: string | Date | null;
+  totalOrders?: number;
+  totalSpent?: number;
 }
+
+// Re-added placeholder/basic CustomerFormValues type
+export interface CustomerFormValues {
+  name: string;
+  phone: string;
+  email?: string;
+  address?: string;
+  addressReference?: string;
+  notes?: string;
+}
+
+// Re-added placeholder/basic SupabaseUser type (mimicking a simplified version)
+export interface SupabaseUser {
+  id: string;
+  email?: string;
+  phone?: string;
+  app_metadata?: {
+      provider?: string;
+      [key: string]: any;
+  };
+  user_metadata?: {
+      [key: string]: any;
+      full_name?: string; // Common user_metadata field
+  };
+  aud?: string;
+  created_at?: string;
+}
+
+// Re-added placeholder/basic SupabaseSession type (mimicking a simplified version)
+export interface SupabaseSession {
+  access_token: string;
+  token_type: string;
+  expires_in?: number;
+  expires_at?: number;
+  refresh_token?: string;
+  user: SupabaseUser;
+}
+
 
 // --- Application Settings ---
 export interface OpeningHoursEntry {
@@ -363,6 +404,7 @@ export interface DeliveryFeeSettings {
 
 export interface StoreSettings {
   store_name: string;
+  logo_url?: string | null; 
   address_street: string;
   address_number: string;
   address_neighborhood: string;
@@ -373,6 +415,7 @@ export interface StoreSettings {
   opening_hours: OpeningHours;
   delivery_fee: DeliveryFeeSettings;
   min_order_value_delivery?: number; // Minimum order value to qualify for delivery at all
+  store_timezone?: string; // e.g., 'America/Sao_Paulo'
 }
 
 export interface PaymentSettings {
@@ -382,33 +425,226 @@ export interface PaymentSettings {
   accept_pix: boolean;
   pix_key_type?: 'cpf' | 'cnpj' | 'email' | 'phone' | 'random';
   pix_key?: string;
-  // gateway_stripe_enabled: boolean;
-  // gateway_mercado_pago_enabled: boolean;
 }
 
 export interface WhatsAppSettings {
-    api_token?: string; // For WhatsApp Business API
-    phone_number_id?: string; // From WhatsApp Business API
-    phone_display_number?: string; // The number customers see
+    api_token?: string; 
+    phone_number_id?: string; 
+    phone_display_number?: string; 
     notify_order_confirmation: boolean;
-    template_order_confirmation?: string; // Name/ID of the template
+    template_order_confirmation?: string; 
     notify_order_ready: boolean;
     template_order_ready?: string;
     notify_order_out_for_delivery: boolean;
     template_order_out_for_delivery?: string;
 }
 
-export interface NotificationSettings {
-    sound_alert_new_order_admin: boolean; // For the admin panel
-    email_admin_new_order?: string; // Email to send admin notifications
+export interface PredefinedSound {
+  key: string;
+  label: string;
+  url: string;
 }
 
+export interface NotificationSettings {
+    sound_alert_new_order_admin: boolean; 
+    email_admin_new_order?: string; 
+    predefined_sound_key?: string; // Key for selected predefined sound or 'custom'
+    sound_new_order_url?: string | null; // URL for the sound to play
+}
+
+// --- Order Flow Settings ---
+export type OrderFlowDurations = {
+  [key in OrderStatus]?: number; // Duration in milliseconds
+};
+
+export type OrderFlowSettings = {
+  [key in OrderType]: OrderFlowDurations;
+};
+
+// For easier use after parsing
+export interface ParsedOpeningHoursEntry {
+  openMinutes: number; // Minutes from midnight
+  closeMinutes: number; // Minutes from midnight
+  enabled: boolean;
+}
+export type ParsedOpeningHours = Record<keyof OpeningHours, ParsedOpeningHoursEntry>;
+
+
 export interface AppSettings {
-  id?: string; // Assuming a single row in DB, might be 'default' or establishment ID
+  id?: string; 
   store: StoreSettings;
   payments: PaymentSettings;
   whatsapp: WhatsAppSettings;
   notifications: NotificationSettings;
-  n8n_api_key?: string | null; // Added for n8n integration API key
+  order_flow: OrderFlowSettings; 
+  n8n_api_key?: string | null; 
   updated_at?: string;
+  // Non-persistent, calculated field for easier use
+  parsedOpeningHours?: ParsedOpeningHours; 
 }
+
+// --- Default Values for Settings ---
+export const defaultOpeningHoursEntry: OpeningHoursEntry = { open: '09:00', close: '22:00', enabled: true };
+export const defaultOrderFlowDurations: OrderFlowDurations = {
+  [OrderStatus.PENDING]: 30 * 1000,        // 30 segundos
+  [OrderStatus.PREPARING]: 3 * 60 * 1000,   // 3 minutos
+  [OrderStatus.READY_FOR_PICKUP]: 2 * 60 * 1000, // 2 minutos
+  [OrderStatus.OUT_FOR_DELIVERY]: 30 * 60 * 1000, // 30 minutos (exemplo)
+  [OrderStatus.DELIVERED]: 0,
+  [OrderStatus.CANCELLED]: 0,
+};
+
+export const defaultOrderFlowSettings: OrderFlowSettings = {
+  [OrderType.MESA]: {
+    ...defaultOrderFlowDurations,
+    [OrderStatus.OUT_FOR_DELIVERY]: 0, // Não aplicável para mesas
+  },
+  [OrderType.DELIVERY]: {
+    ...defaultOrderFlowDurations,
+  },
+  [OrderType.BALCAO]: {
+    ...defaultOrderFlowDurations,
+    [OrderStatus.OUT_FOR_DELIVERY]: 0, // Não aplicável para balcão
+  },
+};
+
+
+export const defaultStoreSettings: StoreSettings = {
+  store_name: 'Nome da Sua Loja Aqui',
+  logo_url: null, 
+  address_street: '', address_number: '', address_neighborhood: '', address_city: '', address_postal_code: '',
+  phone_number: '',
+  opening_hours: {
+    monday: { ...defaultOpeningHoursEntry }, tuesday: { ...defaultOpeningHoursEntry }, wednesday: { ...defaultOpeningHoursEntry },
+    thursday: { ...defaultOpeningHoursEntry }, friday: { ...defaultOpeningHoursEntry, close: '23:00' },
+    saturday: { ...defaultOpeningHoursEntry, open: '10:00', close: '23:00' }, sunday: { ...defaultOpeningHoursEntry, open: '10:00', close: '18:00', enabled: false },
+  },
+  delivery_fee: { type: 'fixed' as DeliveryFeeType, fixed_amount: 5.00 },
+  min_order_value_delivery: 20.00,
+  store_timezone: 'America/Sao_Paulo', // Fuso horário padrão
+};
+
+export const defaultPaymentSettings: PaymentSettings = {
+  accept_cash: true, accept_debit_card: true, accept_credit_card: true, accept_pix: true,
+  pix_key_type: 'random', pix_key: '',
+};
+export const defaultWhatsAppSettings: WhatsAppSettings = {
+  notify_order_confirmation: false, notify_order_ready: false, notify_order_out_for_delivery: false,
+};
+
+const DEFAULT_NEW_ORDER_SOUND_URL = 'https://mdn.github.io/voice-change-o-matic/audio/sine.mp3'; 
+
+export const defaultNotificationSettings: NotificationSettings = {
+  sound_alert_new_order_admin: true,
+  email_admin_new_order: '',
+  predefined_sound_key: 'default_ifood_like', 
+  sound_new_order_url: DEFAULT_NEW_ORDER_SOUND_URL, 
+};
+
+export const defaultAppSettings: AppSettings = {
+  id: 'default_settings',
+  store: defaultStoreSettings,
+  payments: defaultPaymentSettings,
+  whatsapp: defaultWhatsAppSettings,
+  notifications: defaultNotificationSettings,
+  order_flow: defaultOrderFlowSettings, 
+  n8n_api_key: null,
+  updated_at: undefined,
+};
+
+// --- AppState and Actions ---
+export interface AppState {
+  categories: Category[];
+  menuItems: MenuItem[];
+  orders: Order[];
+  tables: Table[];
+  profiles: Profile[]; // Uncommented
+  cart: CartItem[];
+  customerDetails: CustomerDetails | null;
+  alert: AlertInfo | null;
+  isLoading: boolean;
+  isLoadingProfiles: boolean; // Uncommented
+  authLoading: boolean; // Uncommented
+  activeCashSession: CashRegisterSession | null;
+  cashSessions: CashRegisterSession[];
+  cashAdjustments: CashAdjustment[];
+  currentUser: SupabaseUser | null; // Uncommented
+  currentProfile: Profile | null; // Uncommented
+  cashAdjustmentsTableMissing: boolean;
+  settings: AppSettings | null;
+  isLoadingSettings: boolean;
+  settingsTableMissing: boolean;
+  settingsError: string | null;
+  prefilledCustomerForOrder: Profile | null; // Uncommented
+  shouldOpenManualOrderModal: boolean;
+  isStoreOpenNow: boolean;
+  directOrderProfile: Profile | null; // Uncommented
+  passwordRecoverySession: SupabaseSession | null; // Uncommented
+  isDeveloperAdmin: boolean; // Uncommented
+}
+
+export type Action =
+  | { type: 'SET_CATEGORIES'; payload: Category[] }
+  | { type: 'ADD_CATEGORY_SUCCESS'; payload: Category }
+  | { type: 'UPDATE_CATEGORY_SUCCESS'; payload: Category }
+  | { type: 'DELETE_CATEGORY_SUCCESS'; payload: string }
+  | { type: 'SET_MENU_ITEMS'; payload: MenuItem[] }
+  | { type: 'ADD_MENU_ITEM_SUCCESS'; payload: MenuItem }
+  | { type: 'UPDATE_MENU_ITEM_SUCCESS'; payload: MenuItem }
+  | { type: 'DELETE_MENU_ITEM_SUCCESS'; payload: string }
+  | { type: 'SET_ORDERS'; payload: Order[] }
+  | { type: 'ADD_ORDER_SUCCESS'; payload: Order }
+  | { type: 'UPDATE_ORDER_STATUS_SUCCESS'; payload: Order }
+  | { type: 'REALTIME_ORDER_UPDATE'; payload: { eventType: string, new?: any, old?: any, [key: string]: any } }
+  | { type: 'SET_TABLES'; payload: Table[] }
+  | { type: 'ADD_TABLE_SUCCESS'; payload: Table }
+  | { type: 'UPDATE_TABLE_SUCCESS'; payload: Table }
+  | { type: 'DELETE_TABLE_SUCCESS'; payload: string }
+  | { type: 'SET_PROFILES'; payload: Profile[] } // Uncommented
+  | { type: 'ADD_PROFILE_SUCCESS'; payload: Profile } // Uncommented
+  | { type: 'UPDATE_PROFILE_SUCCESS'; payload: Profile } // Uncommented
+  | { type: 'DELETE_PROFILE_SUCCESS'; payload: string } // Uncommented
+  | { type: 'SET_LOADING_PROFILES'; payload: boolean } // Uncommented
+  | { type: 'SET_CART'; payload: CartItem[] }
+  | { type: 'ADD_TO_CART'; payload: CartItem }
+  | { type: 'ADD_RAW_CART_ITEM_SUCCESS'; payload: CartItem }
+  | { type: 'REMOVE_FROM_CART'; payload: string }
+  | { type: 'UPDATE_CART_QUANTITY'; payload: { cartItemId: string; quantity: number } }
+  | { type: 'CLEAR_CART' }
+  | { type: 'SET_CUSTOMER_DETAILS'; payload: CustomerDetails | null }
+  | { type: 'SET_ALERT'; payload: AlertInfo | null }
+  | { type: 'SET_LOADING'; payload: boolean }
+  | { type: 'SET_AUTH_LOADING'; payload: boolean } // Uncommented
+  | { type: 'SET_ACTIVE_CASH_SESSION'; payload: CashRegisterSession | null }
+  | { type: 'SET_CASH_SESSIONS'; payload: CashRegisterSession[] }
+  | { type: 'ADD_CASH_SESSION_SUCCESS'; payload: CashRegisterSession }
+  | { type: 'UPDATE_CASH_SESSION_SUCCESS'; payload: CashRegisterSession }
+  | { type: 'SET_CASH_ADJUSTMENTS'; payload: CashAdjustment[] }
+  | { type: 'ADD_CASH_ADJUSTMENT_SUCCESS'; payload: CashAdjustment }
+  | { type: 'SET_CURRENT_USER'; payload: SupabaseUser | null } // Uncommented
+  | { type: 'SET_CURRENT_PROFILE'; payload: Profile | null } // Uncommented
+  | { type: 'SET_CASH_ADJUSTMENTS_TABLE_MISSING'; payload: boolean }
+  | { type: 'FETCH_SETTINGS_START' }
+  | { type: 'FETCH_SETTINGS_SUCCESS'; payload: AppSettings }
+  | { type: 'FETCH_SETTINGS_FAILURE'; payload: string }
+  | { type: 'UPDATE_SETTINGS_START' }
+  | { type: 'UPDATE_SETTINGS_SUCCESS'; payload: AppSettings }
+  | { type: 'UPDATE_SETTINGS_FAILURE'; payload: string }
+  | { type: 'SET_SETTINGS_TABLE_MISSING'; payload: boolean }
+  | { type: 'SET_PREFILLED_CUSTOMER_FOR_ORDER'; payload: Profile | null } // Uncommented
+  | { type: 'SET_SHOULD_OPEN_MANUAL_ORDER_MODAL'; payload: boolean }
+  | { type: 'SET_IS_STORE_OPEN_NOW'; payload: boolean }
+  | { type: 'SET_DIRECT_ORDER_PROFILE'; payload: Profile | null } // Uncommented
+  | { type: 'SET_PASSWORD_RECOVERY_SESSION'; payload: SupabaseSession | null } // Uncommented
+  | { type: 'CLEAR_PASSWORD_RECOVERY_SESSION' } // Uncommented
+  | { type: 'SET_IS_DEVELOPER_ADMIN'; payload: boolean }; // Uncommented
+
+export type AdminPanelView = 
+  | 'dashboard' 
+  | 'menu' 
+  | 'orders' 
+  | 'kitchen' 
+  | 'tables' 
+  // | 'customers' // This was commented out in original user files, keeping it so
+  | 'financials' 
+  | 'settings';

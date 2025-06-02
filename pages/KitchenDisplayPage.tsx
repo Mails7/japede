@@ -4,7 +4,7 @@ import { useAppContext } from '../contexts/AppContext';
 import { Order, OrderStatus, OrderItem, MenuItem } from '../types';
 import { FireIcon, CheckCircleIcon, ClockIcon, PlayIcon, PauseIcon, RefreshIcon } from '../components/icons';
 import ProgressBar from '../components/shared/ProgressBar';
-import { ORDER_STATUS_DURATIONS } from '../constants';
+// Removed unused import: import { ORDER_STATUS_DURATIONS } from '../constants';
 
 
 const formatTimeRemaining = (ms: number): string => {

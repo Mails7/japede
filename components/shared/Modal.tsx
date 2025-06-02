@@ -29,7 +29,7 @@ const Modal: React.FC<ModalProps> = ({ title, children, onClose }) => {
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-full hover:bg-gray-100"
-            aria-label="Close modal"
+            aria-label="Fechar modal"
           >
             <XIcon className="w-6 h-6" />
           </button>

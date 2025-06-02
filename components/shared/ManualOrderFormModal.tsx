@@ -9,19 +9,26 @@ import { generateId, ORDER_TYPES, PAYMENT_METHODS, DEFAULT_PIZZA_IMAGE } from '.
 interface ManualOrderFormModalProps {
   isOpen: boolean;
   onClose: () => void;
-  initialTableId?: string; // New prop
+  initialTableId?: string; 
 }
 
 const ManualOrderFormModal: React.FC<ManualOrderFormModalProps> = ({ isOpen, onClose, initialTableId }) => {
   console.log(`[ManualOrderFormModal] Component rendering. isOpen: ${isOpen}, initialTableId: ${initialTableId}`);
-  const { menuItems, createManualOrder, setAlert, tables } = useAppContext(); // Added tables from context
+  const { 
+    menuItems, 
+    createManualOrder, 
+    setAlert, 
+    tables,
+    prefilledCustomerForOrder, // Added from context
+    clearPrefilledCustomerForOrder, // Added from context
+  } = useAppContext();
 
   const [orderType, setOrderType] = useState<OrderType>(initialTableId ? OrderType.MESA : OrderType.BALCAO);
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [customerAddress, setCustomerAddress] = useState('');
   const [addressReference, setAddressReference] = useState('');
-  const [tableId, setTableId] = useState(initialTableId || ''); // Initialize with initialTableId
+  const [tableId, setTableId] = useState(initialTableId || ''); 
   const [orderNotes, setOrderNotes] = useState('');
   const [paymentMethodState, setPaymentMethodState] = useState<PaymentMethod>(PaymentMethod.DINHEIRO);
   const [amountPaid, setAmountPaid] = useState<number | undefined>(undefined);
@@ -31,7 +38,7 @@ const ManualOrderFormModal: React.FC<ManualOrderFormModalProps> = ({ isOpen, onC
   
   const [selectedMenuItemId, setSelectedMenuItemId] = useState<string>('');
   const [selectedPizzaSizeId, setSelectedPizzaSizeId] = useState<string | null>(null);
-  const [selectedPizzaCrustId, setSelectedPizzaCrustId] = useState<string | null>(null); // Refers to crust from the selected size
+  const [selectedPizzaCrustId, setSelectedPizzaCrustId] = useState<string | null>(null); 
   const [itemQuantity, setItemQuantity] = useState<number>(1);
 
   const [isManualHalfAndHalf, setIsManualHalfAndHalf] = useState(false);
@@ -58,7 +65,6 @@ const ManualOrderFormModal: React.FC<ManualOrderFormModalProps> = ({ isOpen, onC
 
 
   useEffect(() => {
-    // Reset pizza specific selections when menu item changes
     setSelectedPizzaSizeId(null);
     setSelectedPizzaCrustId(null);
     setIsManualHalfAndHalf(false);
@@ -67,7 +73,6 @@ const ManualOrderFormModal: React.FC<ManualOrderFormModalProps> = ({ isOpen, onC
     if (selectedMenuItem?.item_type === 'pizza' && selectedMenuItem.sizes && selectedMenuItem.sizes.length > 0) {
         const defaultSize = selectedMenuItem.sizes[0];
         setSelectedPizzaSizeId(defaultSize.id); 
-        // Auto-select default crust for the new default size
         if (defaultSize.crusts && defaultSize.crusts.length > 0) {
             const defaultCrustForSize = defaultSize.crusts.find(c => c.additionalPrice === 0) || defaultSize.crusts[0];
             setSelectedPizzaCrustId(defaultCrustForSize.id);
@@ -77,7 +82,6 @@ const ManualOrderFormModal: React.FC<ManualOrderFormModalProps> = ({ isOpen, onC
     }
   }, [selectedMenuItemId, selectedMenuItem]);
 
-  // Update crust options when selected size changes
    useEffect(() => {
     if (selectedPizzaSizeObject && selectedPizzaSizeObject.crusts && selectedPizzaSizeObject.crusts.length > 0) {
         const defaultCrustForSize = selectedPizzaSizeObject.crusts.find(c => c.additionalPrice === 0) || selectedPizzaSizeObject.crusts[0];
@@ -96,7 +100,6 @@ const ManualOrderFormModal: React.FC<ManualOrderFormModalProps> = ({ isOpen, onC
     }
   }, [amountPaid, totalAmount, paymentMethodState]);
 
-  // Effect to handle initialTableId and reset form fields on orderType change or modal open/close
   useEffect(() => {
     console.log(`[ManualOrderFormModal] isOpen effect triggered. isOpen: ${isOpen}, initialTableId: ${initialTableId}`);
     if (isOpen) {
@@ -104,22 +107,28 @@ const ManualOrderFormModal: React.FC<ManualOrderFormModalProps> = ({ isOpen, onC
         console.log(`[ManualOrderFormModal] Modal opening. Determined OrderType: ${determinedOrderType}`);
         setOrderType(determinedOrderType);
         setTableId(initialTableId || '');
-        
         setPaymentMethodState(determinedOrderType === OrderType.MESA ? PaymentMethod.DINHEIRO : PaymentMethod.DINHEIRO); 
-
-        if (!initialTableId) { 
-            console.log('[ManualOrderFormModal] Resetting customer fields for new non-table order.');
+        
+        if (prefilledCustomerForOrder) {
+            console.log('[ManualOrderFormModal] Prefilling customer data from context:', prefilledCustomerForOrder);
+            setCustomerName(prefilledCustomerForOrder.full_name || '');
+            setCustomerPhone(prefilledCustomerForOrder.phone || '');
+            // Clear the prefilled customer from context after using it
+            clearPrefilledCustomerForOrder();
+        } else if (!initialTableId) { 
+            console.log('[ManualOrderFormModal] Resetting customer fields for new non-table, non-prefilled order.');
             setCustomerName('');
             setCustomerPhone('');
             setCustomerAddress('');
             setAddressReference('');
             setOrderNotes('');
         }
+        // If initialTableId exists and no prefilledCustomer, customer fields remain as they were (potentially from previous state or empty if reset)
     } else {
        console.log('[ManualOrderFormModal] Modal closing. Calling resetFormFields.');
-       resetFormFields();
+       resetFormFields(); 
     }
-  }, [isOpen, initialTableId]); 
+  }, [isOpen, initialTableId, prefilledCustomerForOrder, clearPrefilledCustomerForOrder]); 
   
   useEffect(() => {
     if (!initialTableId || orderType !== OrderType.MESA) {
@@ -153,7 +162,7 @@ const ManualOrderFormModal: React.FC<ManualOrderFormModalProps> = ({ isOpen, onC
         setAlert({ message: 'Selecione o tamanho da pizza.', type: 'error' });
         return;
       }
-      const size = selectedPizzaSizeObject; // Already found
+      const size = selectedPizzaSizeObject; 
       
       chosenCrust = size.crusts?.find(c => c.id === selectedPizzaCrustId);
       const crustPrice = chosenCrust?.additionalPrice || 0;
@@ -221,7 +230,7 @@ const ManualOrderFormModal: React.FC<ManualOrderFormModalProps> = ({ isOpen, onC
     };
 
     setCurrentOrderItems(prevItems => [...prevItems, newItem]);
-    setSelectedMenuItemId(''); // This will trigger useEffect to reset pizza selections
+    setSelectedMenuItemId(''); 
     setItemQuantity(1);
   };
 
@@ -230,26 +239,29 @@ const ManualOrderFormModal: React.FC<ManualOrderFormModalProps> = ({ isOpen, onC
   };
 
   const resetFormFields = () => {
-    setOrderType(initialTableId ? OrderType.MESA : OrderType.BALCAO); // Correct: default to BALCAO if no initialTableId
+    const defaultOrderType = initialTableId ? OrderType.MESA : OrderType.BALCAO;
+    setOrderType(defaultOrderType);
     setTableId(initialTableId || '');
-    setCustomerName('');
-    setCustomerPhone('');
+    // Do not reset customerName and customerPhone here if they were prefilled
+    // The prefill logic in useEffect handles setting them and subsequent non-prefilled opens will reset them.
+    if (!prefilledCustomerForOrder) {
+      setCustomerName('');
+      setCustomerPhone('');
+    }
     setCustomerAddress('');
     setAddressReference('');
     setOrderNotes('');
-    setPaymentMethodState(PaymentMethod.DINHEIRO); // Always default to DINHEIRO on reset
+    setPaymentMethodState(PaymentMethod.DINHEIRO);
     setAmountPaid(undefined);
     setChangeDue(undefined);
     setCurrentOrderItems([]);
     setSelectedMenuItemId('');
     setItemQuantity(1);
-    // pizza specific fields are reset by setSelectedMenuItemId('')'s useEffect
   };
 
   const handleSubmitOrder = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validation for customer details based on order type
     if (orderType === OrderType.DELIVERY && (!customerName.trim() || !customerPhone.trim() || !customerAddress.trim())) {
         setAlert({ message: 'Para Delivery, nome, telefone e endereço são obrigatórios.', type: 'error' });
         return;
@@ -260,21 +272,19 @@ const ManualOrderFormModal: React.FC<ManualOrderFormModalProps> = ({ isOpen, onC
          setAlert({ message: 'Para Mesa, o número/nome da mesa é obrigatório.', type: 'error'});
          return;
     }
-    // For MESA, customerName and customerPhone are now optional.
 
     if (currentOrderItems.length === 0) {
       setAlert({ message: 'Adicione pelo menos um item ao pedido.', type: 'error' });
       return;
     }
 
-    // Payment validation only if not a MESA order
     if (orderType !== OrderType.MESA && paymentMethodState === PaymentMethod.DINHEIRO && (amountPaid === undefined || amountPaid < totalAmount)) {
         setAlert({message: "Para pagamento em dinheiro, o valor pago deve ser informado e ser maior ou igual ao total.", type: "error"});
         return;
     }
 
     const manualOrderData: ManualOrderData = {
-      customerName, // Name is optional for MESA, will be handled in context if empty
+      customerName, 
       customerPhone: customerPhone || undefined,
       customerAddress: orderType === OrderType.DELIVERY ? customerAddress : undefined,
       addressReference: orderType === OrderType.DELIVERY ? addressReference || undefined : undefined,
@@ -282,8 +292,8 @@ const ManualOrderFormModal: React.FC<ManualOrderFormModalProps> = ({ isOpen, onC
       items: currentOrderItems,
       orderType,
       tableId: orderType === OrderType.MESA ? tableId : undefined,
-      paymentMethod: orderType !== OrderType.MESA ? paymentMethodState : undefined, // Omit for MESA
-      amountPaid: orderType !== OrderType.MESA && paymentMethodState === PaymentMethod.DINHEIRO ? amountPaid : undefined, // Omit for MESA
+      paymentMethod: orderType !== OrderType.MESA ? paymentMethodState : undefined, 
+      amountPaid: orderType !== OrderType.MESA && paymentMethodState === PaymentMethod.DINHEIRO ? amountPaid : undefined, 
     };
 
     const createdOrder = createManualOrder(manualOrderData);
@@ -518,3 +528,4 @@ const ManualOrderFormModal: React.FC<ManualOrderFormModalProps> = ({ isOpen, onC
 };
 
 export default ManualOrderFormModal;
+
