@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../../contexts/AppContext';
 import { Order, OrderStatus, OrderType, CashRegisterSessionStatus } from '../../types';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Button } from '../../src/components/ui/button';
+import { Button } from '../ui/button';
 import { ArrowsExpandIcon, XIcon, PlusIcon, RefreshIcon } from 'lucide-react';
 import OrderCardComponent from './OrderCard';
 import ManualOrderFormModal from '../shared/ManualOrderFormModal';

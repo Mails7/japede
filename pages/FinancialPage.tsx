@@ -1,6 +1,6 @@
 import React from 'react';
-import { useAppContext } from '../contexts/AppContext';
-import FinanceiroComponent from '../components/financeiro/FinanceiroComponent';
+import { useAppContext } from '../../contexts/AppContext';
+import FinanceiroComponent from '../../components/financeiro/FinanceiroComponent';
 
 const FinanceiroPage: React.FC = () => {
   const { isLoading } = useAppContext();

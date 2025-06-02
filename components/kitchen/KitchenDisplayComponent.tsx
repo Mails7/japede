@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../../contexts/AppContext';
 import { Order, OrderStatus } from '../../types';
 import { Card, CardContent } from '../ui/card';
-import { Button } from '../../src/components/ui/button';
+import { Button } from '../ui/button';
 import { FireIcon, CheckCircleIcon, ClockIcon, PlayIcon, PauseIcon, RefreshIcon } from 'lucide-react';
 import ProgressBar from '../shared/ProgressBar';
 

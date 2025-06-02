@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button } from '../../src/components/ui/button';
+import { Button } from '../ui/button';
 import { Printer, Check, AlertCircle } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { conectarQZTray, obterImpressoras, imprimirComanda, formatarComandaControle, formatarComandaCozinha } from '../../utils/qzTrayHelper';

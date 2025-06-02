@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { Table, ReservationDetails } from '../../types';
 import Modal from './Modal';
 import { CalendarIcon, UsersIcon, DocumentTextIcon } from '../icons';
-import { useAppContext } from '../../contexts/AppContext'; // Import useAppContext for alerts
 
 interface ReservationFormModalProps {
   isOpen: boolean;
@@ -18,7 +17,6 @@ const ReservationFormModal: React.FC<ReservationFormModalProps> = ({
   table, 
   onSaveReservation 
 }) => {
-  const { setAlert } = useAppContext(); // Use context for alerts
   const [customerName, setCustomerName] = useState('');
   const [reservationTime, setReservationTime] = useState('');
   const [guestCount, setGuestCount] = useState<number>(1);
@@ -49,7 +47,7 @@ const ReservationFormModal: React.FC<ReservationFormModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!customerName.trim() || !reservationTime) {
-      setAlert({ message: "Nome do cliente e horário da reserva são obrigatórios.", type: "error" });
+      alert("Nome do cliente e horário da reserva são obrigatórios."); // Replace with AppContext alert
       return;
     }
     onSaveReservation(table.id, { 

@@ -3,58 +3,26 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 console.log('[SupabaseClient] Initializing Supabase client...');
 
-// --- IMPORTANT FOR TYPESCRIPT ---
-// If TypeScript shows errors like "Property 'env' does not exist on type 'ImportMeta'",
-// it's because the TypeScript configuration is missing Vite's client types.
-// The correct fix is to ensure your `tsconfig.json` includes "vite/client"
-// in `compilerOptions.types`.
-// For example:
-// {
-//   "compilerOptions": {
-//     "types": ["vite/client", "node"] // Ensure "vite/client" is present
-//   }
-// }
-// And ensure you have a `.env` file in your project root with:
-// NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-// NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-// --- IMPORTANT FOR TYPESCRIPT ---
+// IMPORTANT: These values are hardcoded based on your request for this specific AI interaction.
+// In a real-world application, these MUST come from environment variables
+// (e.g., process.env.REACT_APP_SUPABASE_URL or window._env_.SUPABASE_URL if injected at runtime).
+// DO NOT commit hardcoded keys to your repository.
+const supabaseUrl = (window as any).SUPABASE_URL;
+const supabaseAnonKey = (window as any).SUPABASE_ANON_KEY;
 
-const env = (import.meta as any).env; // Safely get the env object
+console.log(`[SupabaseClient] SUPABASE_URL from window: ${supabaseUrl ? 'Loaded' : 'MISSING!'}`);
+console.log(`[SupabaseClient] SUPABASE_ANON_KEY from window: ${supabaseAnonKey ? 'Loaded' : 'MISSING!'}`);
 
-let supabaseUrlInternal: string | undefined = env ? env.NEXT_PUBLIC_SUPABASE_URL : undefined;
-let supabaseAnonKeyInternal: string | undefined = env ? env.NEXT_PUBLIC_SUPABASE_ANON_KEY : undefined;
 
-const urlMissing = !supabaseUrlInternal;
-const keyMissing = !supabaseAnonKeyInternal;
-
-console.log(`[SupabaseClient] NEXT_PUBLIC_SUPABASE_URL from import.meta.env: ${supabaseUrlInternal ? 'Loaded' : 'MISSING!'}`);
-console.log(`[SupabaseClient] NEXT_PUBLIC_SUPABASE_ANON_KEY from import.meta.env: ${supabaseAnonKeyInternal ? 'Loaded' : 'MISSING!'}`);
-
-if (urlMissing || keyMissing) {
-  const missingVars = [];
-  if (urlMissing) missingVars.push('NEXT_PUBLIC_SUPABASE_URL');
-  if (keyMissing) missingVars.push('NEXT_PUBLIC_SUPABASE_ANON_KEY');
-  
-  const warningMessage = `[SupabaseClient] AVISO: ${missingVars.join(' e/ou ')} não está(ão) definida(s) no seu arquivo .env. A aplicação pode não funcionar corretamente. Defina esta(s) variável(is) para conectar ao Supabase.`;
-  console.warn(warningMessage);
-
-  // Use placeholders to allow the app to load without crashing immediately.
-  // Supabase client will be created but API calls will fail if these are used.
-  if (urlMissing) {
-    supabaseUrlInternal = 'http://missing-supabase-url.example.com'; // Placeholder URL
-  }
-  if (keyMissing) {
-    // Placeholder key - a simple string is fine, createClient doesn't deeply validate key format at init.
-    supabaseAnonKeyInternal = 'missing_supabase_anon_key_placeholder'; 
-  }
-  // The explicit throw new Error() is removed.
+if (!supabaseUrl || !supabaseAnonKey) {
+  const message = 'Supabase URL or Anon Key is missing from window object. Cannot initialize Supabase client. Ensure window.SUPABASE_URL and window.SUPABASE_ANON_KEY are set in index.html before this script runs.';
+  console.error(`[SupabaseClient] CRITICAL ERROR: ${message}`);
+  alert(message); 
+  throw new Error(message);
 }
 
-// createClient expects string, not undefined.
-// The logic above ensures supabaseUrlInternal and supabaseAnonKeyInternal are strings by this point.
-export const supabase: SupabaseClient = createClient(supabaseUrlInternal!, supabaseAnonKeyInternal!);
-console.log('[SupabaseClient] Supabase client instance created (possibly with placeholder credentials).');
-
+export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseAnonKey);
+console.log('[SupabaseClient] Supabase client instance created.');
 
 // Helper function to convert Supabase data (with potential single object response) to an array
 export function getArray<T>(data: T | T[] | null): T[] {
@@ -63,7 +31,7 @@ export function getArray<T>(data: T | T[] | null): T[] {
 }
 
 // Extremely cautious string conversion
-const ultraSafeString = (val: any, defaultString: string = '[Valor Não Convertível]'): string => {
+const ultraSafeString = (val: any, defaultString: string = '[Unconvertible Value]'): string => {
   try {
     if (val === null) return 'null';
     if (val === undefined) return 'undefined';
@@ -77,19 +45,19 @@ const ultraSafeString = (val: any, defaultString: string = '[Valor Não Convert�
             return JSON.stringify(val, (key, value) => {
                 if (typeof value === 'object' && value !== null) {
                     if (cache.has(value)) {
-                        return '[Referência Circular]';
+                        return '[Circular Reference]';
                     }
                     cache.add(value);
                 }
                 return value;
-            }, 2);
+            }, 2); 
         } catch (jsonError) {
-            return String(val);
+            return String(val); 
         }
     }
     return String(val);
   } catch (e) {
-    return defaultString + ` (Conversão falhou: ${ (e instanceof Error) ? e.message : 'razão desconhecida'})`;
+    return defaultString + ` (Conversion failed: ${ (e instanceof Error) ? e.message : 'unknown reason'})`;
   }
 };
 
@@ -108,7 +76,7 @@ export function handleSupabaseError({ error: errorParam, customMessage }: { erro
   let isRLSViolation = false;
   let rlsTableName: string | null = null;
 
-  if (!errorParam) {
+  if (!errorParam) { 
     errorDetails = 'Nenhum objeto de erro foi fornecido ao manipulador.';
     try {
       console.warn(`HANDLER_LOGIC (FALSY_PATH): errorParam was falsy. Value:`, errorParam, `Type: ${typeof errorParam}. Operation description: "${operationDescription}"`);
@@ -139,13 +107,6 @@ export function handleSupabaseError({ error: errorParam, customMessage }: { erro
         }
       }
 
-      // Check for placeholder credential usage indicative message
-      if (errorDetails.includes("missing_supabase") || errorDetails.includes("placeholder_anon_key") || errorDetails.includes("placeholder.supabase.co")) {
-        errorDetails = "As credenciais do Supabase parecem ser placeholders. Verifique seu arquivo .env.";
-        isNetworkError = true; // Treat as effectively a setup/network issue for user feedback
-      }
-
-
       console.log(`HANDLER_LOGIC (TRUTHY_PATH): Processing truthy errorParam. Determined error string: "${errorDetails}". Operation description: "${operationDescription}". Is network error: ${isNetworkError}. Is RLS violation: ${isRLSViolation}. RLS table: ${rlsTableName}`);
     } catch (e) {
       const exceptionString = ultraSafeString(e, '[Exceção não identificável durante o processamento do erro]');
@@ -161,7 +122,7 @@ export function handleSupabaseError({ error: errorParam, customMessage }: { erro
     const tableNameInfo = rlsTableName ? `na tabela "${rlsTableName}" ` : "";
     finalMessage = `${operationDescription}. VIOLAÇÃO DE RLS: A operação ${tableNameInfo}foi bloqueada pelas políticas de segurança a nível de linha (RLS) do Supabase. Verifique as permissões (INSERT, UPDATE, DELETE) para a role relevante (ex: 'authenticated', 'anon') no painel do Supabase. Detalhe: ${errorDetails}`;
   } else if (isNetworkError) {
-    finalMessage = `${operationDescription}. Problema de conexão/configuração: Não foi possível conectar ao servidor ou as credenciais são inválidas/placeholders. Verifique sua conexão com a internet, o arquivo .env e as credenciais do Supabase. Detalhe: ${errorDetails}`;
+    finalMessage = `${operationDescription}. Problema de conexão: Não foi possível conectar ao servidor. Verifique sua conexão com a internet e tente novamente. Detalhe: ${errorDetails}`;
   } else {
     finalMessage = `${operationDescription}. Detalhe: ${errorDetails}`;
   }

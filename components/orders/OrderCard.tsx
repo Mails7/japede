@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAppContext } from '../../contexts/AppContext';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Button } from '../../src/components/ui/button';
+import { Button } from '../ui/button';
 import { ArrowRight, Clock, DollarSign } from 'lucide-react';
 import { Order, OrderStatus } from '../../types';
 import { useNavigate } from 'react-router-dom';

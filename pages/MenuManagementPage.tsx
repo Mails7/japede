@@ -5,7 +5,7 @@ import { Category, MenuItem } from '../types';
 import Modal from '../components/shared/Modal';
 import MenuItemForm from '../components/shared/MenuItemForm';
 import CategoryForm from '../components/shared/CategoryForm';
-import { PlusIcon, PencilAltIcon, TrashIcon, EyeIcon, EyeOffIcon, LinkIcon, ClipboardCopyIcon, DuplicateIcon } from '../components/icons';
+import { PlusIcon, PencilAltIcon, TrashIcon, EyeIcon, EyeOffIcon, LinkIcon, ClipboardCopyIcon, DuplicateIcon } from '../components/icons'; // Added DuplicateIcon
 import Alert from '../components/shared/Alert';
 
 const MenuManagementPage: React.FC = () => {
@@ -17,7 +17,7 @@ const MenuManagementPage: React.FC = () => {
     deleteCategory, 
     addMenuItem, 
     updateMenuItem, 
-    deleteMenuItem, // Keep this here
+    deleteMenuItem, 
     alert, 
     setAlert
   } = useAppContext();
@@ -51,20 +51,21 @@ const MenuManagementPage: React.FC = () => {
 
   const openEditMenuItemModal = (menuItem: MenuItem) => {
     setEditingMenuItem(menuItem);
-    setCategoryForNewItem(menuItem.category_id);
+    setCategoryForNewItem(menuItem.category_id); // Ensure categoryId is set for editing context
     setIsMenuItemModalOpen(true);
   };
 
   const openDuplicateMenuItemModal = (itemToDuplicate: MenuItem) => {
-    const { id, created_at, ...itemDataWithoutId } = itemToDuplicate; 
+    const { id, created_at, ...itemDataWithoutId } = itemToDuplicate; // Destructure to remove id and created_at
     const duplicatedItem: Omit<MenuItem, 'id' | 'created_at'> & { id?: string; created_at?: string } = {
       ...itemDataWithoutId,
       name: `${itemToDuplicate.name} (Cópia)`,
     };
+    // Ensure id and created_at are not present for a new item
     delete duplicatedItem.id; 
     delete duplicatedItem.created_at;
 
-    setEditingMenuItem(duplicatedItem as MenuItem); 
+    setEditingMenuItem(duplicatedItem as MenuItem); // Cast as MenuItem for the form, knowing id is missing
     setCategoryForNewItem(itemToDuplicate.category_id);
     setIsMenuItemModalOpen(true);
   };
@@ -206,7 +207,16 @@ const MenuManagementPage: React.FC = () => {
                         {item.available ? <EyeOffIcon className="w-3 h-3 mr-1" /> : <EyeIcon className="w-3 h-3 mr-1" />} 
                         {item.available ? 'Indisponível' : 'Disponível'}
                     </button>
-                    {/* O botão Excluir foi removido daqui */}
+                    <button
+                      onClick={() => {
+                        if(window.confirm(`Tem certeza que deseja excluir o item "${item.name}"?`)){
+                            deleteMenuItem(item.id);
+                        }
+                      }}
+                      className="bg-red-500 hover:bg-red-600 text-white py-1 px-2 rounded-md flex items-center transition duration-150"
+                    >
+                      <TrashIcon className="w-3 h-3 mr-1" /> Excluir
+                    </button>
                   </div>
                 </div>
               </div>
@@ -221,7 +231,7 @@ const MenuManagementPage: React.FC = () => {
           <CategoryForm
             category={editingCategory}
             onSave={(catData) => {
-              if (editingCategory && editingCategory.id) {
+              if (editingCategory && editingCategory.id) { // Ensure editingCategory and its id exist for update
                 updateCategory({ ...editingCategory, ...catData });
               } else {
                 addCategory(catData.name);
@@ -239,16 +249,14 @@ const MenuManagementPage: React.FC = () => {
             menuItem={editingMenuItem}
             categoryId={editingMenuItem ? editingMenuItem.category_id : categoryForNewItem}
             onSave={(itemData) => {
-              if (editingMenuItem && editingMenuItem.id) {
+              if (editingMenuItem && editingMenuItem.id) { // If editingMenuItem has an ID, it's an update
                 updateMenuItem({ ...editingMenuItem, ...itemData });
-              } else { 
+              } else { // Otherwise, it's a new item (could be from scratch or a duplicate without an ID)
                 addMenuItem(itemData);
               }
               setIsMenuItemModalOpen(false);
             }}
             onCancel={() => setIsMenuItemModalOpen(false)}
-            // Pass deleteMenuItem function to MenuItemForm
-            onDeleteItem={deleteMenuItem} 
           />
         </Modal>
       )}

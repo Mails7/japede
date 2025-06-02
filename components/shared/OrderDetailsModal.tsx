@@ -26,7 +26,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ order, onClose })
 
   return (
     <Modal title={`Detalhes do Pedido #${order.id.substring(0,6)}`} onClose={onClose}>
-      <div className="space-y-3 text-gray-700 text-base"> {/* Base font size increased */}
+      <div className="space-y-3 text-gray-700 text-sm">
         <p><strong>Cliente:</strong> {order.customer_name}</p>
         {order.customer_phone && <p><strong>Telefone:</strong> {order.customer_phone}</p>}
         {order.customer_address && <p><strong>Endereço:</strong> {order.customer_address}</p>}
@@ -50,25 +50,25 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ order, onClose })
             {order.payment_method}
             </p>
         )}
-        {order.payment_method === PaymentMethod.DINHEIRO && order.amount_paid !== undefined && order.amount_paid !== null && (
+        {order.payment_method === PaymentMethod.DINHEIRO && order.amount_paid !== undefined && (
             <>
                 <p><strong>Valor Pago:</strong> R$ {order.amount_paid.toFixed(2)}</p>
-                {order.change_due !== undefined && order.change_due !== null && <p><strong>Troco:</strong> R$ {order.change_due.toFixed(2)}</p>}
+                {order.change_due !== undefined && <p><strong>Troco:</strong> R$ {order.change_due.toFixed(2)}</p>}
             </>
         )}
 
-        <p className="font-semibold text-lg">Total: R$ {order.total_amount.toFixed(2)}</p> {/* Total font size */}
+        <p className="font-semibold text-base">Total: R$ {order.total_amount.toFixed(2)}</p>
         {order.notes && <p><strong>Observações:</strong> {order.notes}</p>}
             <div className="pt-2 border-t mt-3">
-            <p className="text-sm"><strong>Últ. Att. Status:</strong> {new Date(order.last_status_change_time).toLocaleString()}</p> {/* Sub-detail font size adjusted */}
-            <p className="text-sm"><strong>Prog. Automático:</strong> {order.auto_progress ? 'Ativo' : 'Desativado'}</p> {/* Sub-detail font size adjusted */}
+            <p className="text-xs"><strong>Últ. Att. Status:</strong> {new Date(order.last_status_change_time).toLocaleString()}</p>
+            <p className="text-xs"><strong>Prog. Automático:</strong> {order.auto_progress ? 'Ativo' : 'Desativado'}</p>
             {order.auto_progress && order.next_auto_transition_time &&
-                <p className="text-sm"><strong>Próx. Transição:</strong> {new Date(order.next_auto_transition_time).toLocaleTimeString()}</p>
+                <p className="text-xs"><strong>Próx. Transição:</strong> {new Date(order.next_auto_transition_time).toLocaleTimeString()}</p>
             }
         </div>
         <div>
-            <h5 className="font-semibold text-lg mb-1 mt-2">Itens:</h5> {/* Items title font size */}
-            <ul className="list-disc list-inside pl-1 space-y-1 text-lg max-h-48 overflow-y-auto"> {/* Items list font size changed to text-lg */}
+            <h5 className="font-semibold mb-1 mt-2">Itens:</h5>
+            <ul className="list-disc list-inside pl-1 space-y-1 text-xs max-h-40 overflow-y-auto">
             {order.items.map((item, index) => (
                 <li key={index}>
                 {item.quantity}x {item.name} (R$ {item.price.toFixed(2)} cada)

@@ -12,10 +12,9 @@ interface MenuItemFormProps {
   categoryId: string;
   onSave: (item: Omit<MenuItem, 'id' | 'created_at'>) => void;
   onCancel: () => void;
-  onDeleteItem?: (itemId: string) => Promise<void>; // Added for deleting item
 }
 
-const MenuItemForm: React.FC<MenuItemFormProps> = ({ menuItem, categoryId, onSave, onCancel, onDeleteItem }) => {
+const MenuItemForm: React.FC<MenuItemFormProps> = ({ menuItem, categoryId, onSave, onCancel }) => {
   const { categories, setAlert } = useAppContext();
   
   // Common fields
@@ -25,13 +24,13 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({ menuItem, categoryId, onSav
   const [imageUrl, setImageUrl] = useState('');
   const [available, setAvailable] = useState(true);
   const [itemType, setItemType] = useState<'standard' | 'pizza'>('standard');
-  const [sendToKitchen, setSendToKitchen] = useState(true);
+  const [sendToKitchen, setSendToKitchen] = useState(true); // New state for "Send to Kitchen?"
   
   // Standard item price
   const [standardPrice, setStandardPrice] = useState(0);
 
   // Pizza specific fields
-  const [sizes, setSizes] = useState<PizzaSize[]>([]);
+  const [sizes, setSizes] = useState<PizzaSize[]>([]); // PizzaSize now includes its own crusts
   const [allowHalfAndHalf, setAllowHalfAndHalf] = useState(false);
 
   const [isGeneratingDesc, setIsGeneratingDesc] = useState(false);
@@ -44,7 +43,7 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({ menuItem, categoryId, onSav
       setImageUrl(menuItem.image_url || '');
       setAvailable(menuItem.available);
       setItemType(menuItem.item_type || 'standard');
-      setSendToKitchen(menuItem.send_to_kitchen === undefined ? true : menuItem.send_to_kitchen);
+      setSendToKitchen(menuItem.send_to_kitchen === undefined ? true : menuItem.send_to_kitchen); // Handle existing items
       
       if (menuItem.item_type === 'pizza') {
         setSizes(menuItem.sizes || [{ id: generateId(), name: 'Padrão', price: menuItem.price, crusts: [] }]);
@@ -56,19 +55,21 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({ menuItem, categoryId, onSav
         setAllowHalfAndHalf(false);
       }
     } else {
+        // Reset for new item
         setName('');
         setDescription('');
         setSelectedCategoryId(categoryId);
         setImageUrl('');
         setAvailable(true);
         setItemType('standard');
-        setSendToKitchen(true);
+        setSendToKitchen(true); // Default for new items
         setStandardPrice(0);
         setSizes([{ id: generateId(), name: 'Padrão', price: 0, crusts: [] }]);
         setAllowHalfAndHalf(false);
     }
   }, [menuItem, categoryId]);
 
+  // Pizza Sizes Management
   const addSize = () => setSizes([...sizes, { id: generateId(), name: '', price: 0, crusts: [] }]);
   const updateSizeField = (sizeIndex: number, field: keyof Omit<PizzaSize, 'id'|'crusts'>, value: string | number) => {
     const newSizes = [...sizes];
@@ -80,6 +81,7 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({ menuItem, categoryId, onSav
   };
   const removeSize = (index: number) => setSizes(sizes.filter((_, i) => i !== index));
 
+  // Pizza Crust Management per Size
   const addCrustToSize = (sizeIndex: number) => {
     const newSizes = [...sizes];
     const sizeToUpdate = { ...newSizes[sizeIndex] };
@@ -114,6 +116,7 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({ menuItem, categoryId, onSav
     }
   };
 
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !selectedCategoryId) {
@@ -142,7 +145,7 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({ menuItem, categoryId, onSav
             }
         }
       }
-      priceToSave = sizes.length > 0 ? Math.min(...sizes.map(s => s.price)) : 0;
+      priceToSave = sizes.length > 0 ? Math.min(...sizes.map(s => s.price)) : 0; // Smallest size price as base
     } else {
       if (standardPrice <= 0) {
         setAlert({message: 'Preço do item padrão deve ser maior que zero.', type: 'error'});
@@ -158,7 +161,7 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({ menuItem, categoryId, onSav
       image_url: imageUrl || undefined, 
       available,
       item_type: itemType,
-      send_to_kitchen: sendToKitchen,
+      send_to_kitchen: sendToKitchen, // Include the new field
       price: priceToSave, 
       sizes: itemType === 'pizza' ? sizes.map(s => ({ ...s, crusts: s.crusts?.length ? s.crusts : undefined })) : undefined,
       allow_half_and_half: itemType === 'pizza' ? allowHalfAndHalf : undefined,
@@ -184,15 +187,6 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({ menuItem, categoryId, onSav
       setAlert({ message: errorMessage, type: 'error'});
     } finally {
       setIsGeneratingDesc(false);
-    }
-  };
-
-  const handleDelete = async () => {
-    if (menuItem && menuItem.id && onDeleteItem) {
-      if (window.confirm(`Tem certeza que deseja excluir o item "${menuItem.name}"? Esta ação não pode ser desfeita.`)) {
-        await onDeleteItem(menuItem.id);
-        onCancel(); // Close modal after deletion attempt
-      }
     }
   };
 
@@ -230,7 +224,6 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({ menuItem, categoryId, onSav
           onChange={(e) => setDescription(e.target.value)}
           rows={3}
           className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
-          placeholder="Descreva seu item aqui..."
         />
         <button
           type="button"
@@ -264,6 +257,7 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({ menuItem, categoryId, onSav
 
       {itemType === 'pizza' && (
         <>
+          {/* Sizes Management */}
           <div className="space-y-3 p-3 border border-gray-200 rounded-md">
             <h4 className="text-md font-medium text-gray-700">Tamanhos da Pizza e Bordas</h4>
             {sizes.map((size, sizeIndex) => (
@@ -282,6 +276,7 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({ menuItem, categoryId, onSav
                   </button>
                 </div>
 
+                {/* Crusts for this size */}
                 <div className="ml-0 sm:ml-4 mt-2 pt-2 border-t border-gray-200 space-y-2">
                     <h5 className="text-xs font-medium text-gray-600">Opções de Borda para este Tamanho ({size.name}):</h5>
                     {size.crusts?.map((crust, crustIndex) => (
@@ -371,33 +366,20 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({ menuItem, categoryId, onSav
             <label htmlFor="itemSendToKitchen" className="ml-2 block text-sm text-gray-900">Enviar para Cozinha?</label>
         </div>
       </div>
-      <div className="flex justify-between items-center pt-2">
-        <div>
-            {menuItem && menuItem.id && onDeleteItem && (
-            <button
-                type="button"
-                onClick={handleDelete}
-                className="px-4 py-2 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-red-400 transition-colors flex items-center"
-            >
-                <TrashIcon className="w-4 h-4 mr-1" /> Excluir Item
-            </button>
-            )}
-        </div>
-        <div className="flex space-x-3">
-            <button
-            type="button"
-            onClick={onCancel}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 transition-colors"
-            >
-            Cancelar
-            </button>
-            <button
-            type="submit"
-            className="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-dark border border-transparent rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark transition-colors"
-            >
-            {menuItem && menuItem.id ? 'Salvar Alterações' : 'Adicionar Item'}
-            </button>
-        </div>
+      <div className="flex justify-end space-x-3 pt-2">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 transition-colors"
+        >
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          className="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-dark border border-transparent rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark transition-colors"
+        >
+          {menuItem ? 'Salvar Alterações' : 'Adicionar Item'}
+        </button>
       </div>
     </form>
   );

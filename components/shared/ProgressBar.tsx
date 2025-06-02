@@ -1,30 +1,29 @@
 import React from 'react';
+import { useAppContext } from '../../contexts/AppContext';
+import { ProgressBar as ProgressBarType } from '../../types';
 
 interface ProgressBarProps {
   percent: number;
-  className?: string;
-  barColor?: string; // e.g., 'bg-green-500'
-  bgColor?: string; // e.g., 'bg-gray-200'
+  barColor?: string;
+  bgColor?: string;
+  height?: number;
 }
 
-const ProgressBar: React.FC<ProgressBarProps> = ({ 
-  percent, 
-  className = '', 
-  barColor = 'bg-primary', 
-  bgColor = 'bg-gray-300' 
+const ProgressBar: React.FC<ProgressBarProps> = ({
+  percent,
+  barColor = 'bg-primary',
+  bgColor = 'bg-gray-200',
+  height = 8
 }) => {
-  const safePercent = Math.max(0, Math.min(100, percent));
-
+  // Garantir que o percentual esteja entre 0 e 100
+  const safePercent = Math.min(Math.max(0, percent), 100);
+  
   return (
-    <div className={`w-full ${bgColor} rounded-full h-2.5 ${className}`}>
-      <div
-        className={`${barColor} h-2.5 rounded-full transition-all duration-300 ease-linear`}
-        style={{ width: `${safePercent}%` }}
-        role="progressbar"
-        aria-valuenow={safePercent}
-        aria-valuemin={0}
-        aria-valuemax={100}
-      ></div>
+    <div className={`w-full ${bgColor} rounded-full overflow-hidden`} style={{ height: `${height}px` }}>
+      <div 
+        className={`${barColor} transition-all duration-500 ease-in-out`} 
+        style={{ width: `${safePercent}%`, height: '100%' }}
+      />
     </div>
   );
 };

@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../../contexts/AppContext';
-import { CustomerDetails } from '../../types'; // Corrected import
+import { CustomerDetails } from '../../types';
 import Modal from '../shared/Modal';
 
 interface CustomerDetailsFormProps {
@@ -11,10 +11,13 @@ interface CustomerDetailsFormProps {
 
 const CustomerDetailsForm: React.FC<CustomerDetailsFormProps> = ({ onClose, onSubmit }) => {
   const { 
-    customerDetails: initialCustomerDetails, 
+    customerDetails: initialCustomerDetails, // Renamed to avoid conflict with local state
     setCustomerDetails, 
     cart, 
     setAlert,
+    currentUser, 
+    currentProfile,
+    updateUserProfile // Removed: updateUserProfile is part of AppContext and should not be passed as prop
   } = useAppContext();
 
   const [name, setName] = useState('');
@@ -26,22 +29,21 @@ const CustomerDetailsForm: React.FC<CustomerDetailsFormProps> = ({ onClose, onSu
   const totalAmount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   useEffect(() => {
-    if (initialCustomerDetails) {
-      console.log("[CustomerDetailsForm] Using initialCustomerDetails (transient) for prefill:", initialCustomerDetails);
+    if (currentUser && currentProfile) {
+      setName(currentProfile.full_name || '');
+      setPhone(currentProfile.phone || '');
+      setAddress(currentProfile.default_address || '');
+      setAddressReference(currentProfile.default_address_reference || '');
+      // Notes are specific to the order, not typically part of a user profile's default details
+      // setNotes(currentProfile.notes || ''); // If you had a 'default_notes' on profile
+    } else if (initialCustomerDetails) { // Fallback to transient customerDetails if not logged in
       setName(initialCustomerDetails.name);
       setPhone(initialCustomerDetails.phone);
       setAddress(initialCustomerDetails.address);
       setAddressReference(initialCustomerDetails.addressReference || '');
       setNotes(initialCustomerDetails.notes || '');
-    } else {
-        console.log("[CustomerDetailsForm] No prefill data found. Starting with empty fields.");
-        setName('');
-        setPhone('');
-        setAddress('');
-        setAddressReference('');
-        setNotes('');
     }
-  }, [initialCustomerDetails]);
+  }, [currentUser, currentProfile, initialCustomerDetails]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,9 +61,12 @@ const CustomerDetailsForm: React.FC<CustomerDetailsFormProps> = ({ onClose, onSu
     }
 
     const currentDetails: CustomerDetails = { name, phone, address, addressReference, notes };
-    setCustomerDetails(currentDetails); 
+    setCustomerDetails(currentDetails); // Set for the current order context
+
+    // If user is logged in and details changed, update their profile
+    // This is handled by placeOrder in AppContext now.
     
-    onSubmit(); 
+    onSubmit(); // This will trigger placeOrder which now handles profile update if needed
   };
 
   return (
