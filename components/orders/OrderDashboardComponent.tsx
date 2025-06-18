@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAppContext } from '../../contexts/AppContext';
 import { Order, OrderStatus, OrderType, CashRegisterSessionStatus } from '../../types';
 import { Card, CardContent, CardHeader, CardTitle } from '../../src/components/ui/card';
@@ -8,7 +8,7 @@ import OrderCardComponent from './OrderCard';
 import ManualOrderFormModal from '../shared/ManualOrderFormModal';
 
 const OrderDashboardComponent: React.FC = () => {
-  const { orders, updateOrderStatus, setAlert, forceCheckOrderTransitions, toggleOrderAutoProgress, activeCashSession } = useAppContext();
+  const { orders, updateOrderStatus, setAlert, forceCheckOrderTransitions, activeCashSession } = useAppContext();
   const [selectedOrderForDetails, setSelectedOrderForDetails] = useState<Order | null>(null);
   const [isOrderDetailsModalOpen, setIsOrderDetailsModalOpen] = useState(false);
   const [isManualOrderModalOpen, setIsManualOrderModalOpen] = useState(false);
@@ -32,14 +32,6 @@ const OrderDashboardComponent: React.FC = () => {
     updateOrderStatus(id, status, manual);
     if (manual) {
       setAlert({ message: `Status do pedido #${id.substring(0, 6)} atualizado para ${status}.`, type: 'info' });
-    }
-  };
-
-  const handleToggleAutoProgress = (orderId: string) => {
-    toggleOrderAutoProgress(orderId);
-    const order = orders.find(o => o.id === orderId);
-    if (order) {
-      setAlert({ message: `Progresso automático ${!order.auto_progress ? 'ativado' : 'desativado'} para o pedido #${orderId.substring(0, 6)}.`, type: 'info' });
     }
   };
 
@@ -140,7 +132,6 @@ const OrderDashboardComponent: React.FC = () => {
                           order={order}
                           onOpenDetails={openOrderDetailsModal}
                           onUpdateStatus={handleUpdateStatus}
-                          onToggleAutoProgress={handleToggleAutoProgress}
                         />
                       </div>
                     ))

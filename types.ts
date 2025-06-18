@@ -1,4 +1,3 @@
-
 export enum OrderStatus {
   PENDING = 'Pendente',
   PREPARING = 'Em Preparo',
@@ -363,6 +362,7 @@ export interface DeliveryFeeSettings {
 
 export interface StoreSettings {
   store_name: string;
+  logo_url?: string; // URL for store logo
   address_street: string;
   address_number: string;
   address_neighborhood: string;

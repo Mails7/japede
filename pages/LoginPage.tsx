@@ -1,21 +1,22 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../contexts/AppContext';
+import { SettingsProvider, useSettingsContext } from '../contexts/SettingsContext';
 import LoadingSpinner from '../components/shared/LoadingSpinner';
-import { KeyIcon, MailIcon, StorefrontIcon, GoogleIcon as GoogleIconSvg } from '../components/icons'; 
+import { ChefHatIcon, PizzaIcon } from '../components/icons'; 
+import { Mail, Chrome } from 'lucide-react';
 import ForgotPasswordModal from '../components/auth/ForgotPasswordModal';
 import AdminRegisterModal from '../components/auth/AdminRegisterModal';
 
-const LoginPage: React.FC = () => {
+const LoginPageContent: React.FC = () => {
   const { 
     signIn, 
-    signInWithGoogle, 
     authLoading, 
-    settings, 
     setAlert,
-    profiles, 
-    isLoadingProfiles, 
+    currentUser,
+    currentProfile,
   } = useAppContext();
+
+  const { settings } = useSettingsContext();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -24,12 +25,9 @@ const LoginPage: React.FC = () => {
   const [canShowRegisterLink, setCanShowRegisterLink] = useState(false);
 
   useEffect(() => {
-    // Show register link only if no profiles exist and profiles are not loading
-    // This is a client-side check; true "first user only" needs backend enforcement.
-    if (!isLoadingProfiles) {
-      setCanShowRegisterLink(profiles.length === 0);
-    }
-  }, [profiles, isLoadingProfiles]);
+    // Show register link only if no current profile exists
+    setCanShowRegisterLink(!currentProfile);
+  }, [currentProfile]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,7 +39,8 @@ const LoginPage: React.FC = () => {
   };
 
   const handleGoogleSignIn = async () => {
-    await signInWithGoogle();
+    // TODO: Implement Google sign in
+    setAlert({ message: 'Login com Google em desenvolvimento.', type: 'info' });
   };
   
   const storeLogoUrl = settings?.store?.logo_url || 'https://picsum.photos/seed/login_logo/80/80';
@@ -72,7 +71,7 @@ const LoginPage: React.FC = () => {
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 sr-only">Email</label>
               <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <MailIcon className="h-5 w-5 text-gray-400" />
+                      <Mail className="h-5 w-5 text-gray-400" />
                   </div>
                   <input
                   type="email"
@@ -92,7 +91,7 @@ const LoginPage: React.FC = () => {
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 sr-only">Senha</label>
                <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <KeyIcon className="h-5 w-5 text-gray-400" />
+                      <ChefHatIcon className="h-5 w-5 text-gray-400" />
                   </div>
                   <input
                   type="password"
@@ -116,7 +115,7 @@ const LoginPage: React.FC = () => {
               >
                 Esqueceu sua senha?
               </button>
-              {!isLoadingProfiles && canShowRegisterLink && (
+              {!currentProfile && (
                 <button
                     type="button"
                     onClick={() => setIsAdminRegisterModalOpen(true)}
@@ -125,10 +124,6 @@ const LoginPage: React.FC = () => {
                     Cadastre-se (1º Admin)
                 </button>
               )}
-               {isLoadingProfiles && (
-                <span className="text-xs text-gray-400">Verificando cadastro...</span>
-              )}
-
             </div>
 
             <div>
@@ -163,7 +158,7 @@ const LoginPage: React.FC = () => {
                 disabled={authLoading}
                 className="w-full inline-flex justify-center py-3 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-light disabled:opacity-70"
             >
-               {authLoading ? <LoadingSpinner size="w-5 h-5 mr-2" /> : <GoogleIconSvg className="w-5 h-5 mr-2" />}
+               {authLoading ? <LoadingSpinner size="w-5 h-5 mr-2" /> : <Chrome className="w-5 h-5 mr-2" />}
                 Entrar com Google
             </button>
           </div>
@@ -181,6 +176,14 @@ const LoginPage: React.FC = () => {
         <AdminRegisterModal onClose={() => setIsAdminRegisterModalOpen(false)} />
       )}
     </>
+  );
+};
+
+const LoginPage: React.FC = () => {
+  return (
+    <SettingsProvider>
+      <LoginPageContent />
+    </SettingsProvider>
   );
 };
 

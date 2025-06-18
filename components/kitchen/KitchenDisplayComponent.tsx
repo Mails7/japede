@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../../contexts/AppContext';
 import { Order, OrderStatus } from '../../types';
-import { Card, CardContent } from '../../src/components/ui/card';
 import { Button } from '../../src/components/ui/button';
 import { FlameIcon, CheckCircleIcon, ClockIcon, PlayIcon, PauseIcon, RefreshCwIcon } from 'lucide-react';
 import ProgressBar from '../shared/ProgressBar';
@@ -53,16 +52,13 @@ const KitchenDisplayComponent: React.FC = () => {
     }
   };
 
-  // Componente para exibir um pedido na cozinha
-  const KitchenOrderCard = ({ order, kitchenItems }) => {
-    const [timeRemaining, setTimeRemaining] = useState<string>('');
-    
-    // Formatar o tempo restante
-    const formatTimeRemaining = (ms: number): string => {
-      if (ms <= 0) return "0s";
-      const totalSeconds = Math.round(ms / 1000);
-      const minutes = Math.floor(totalSeconds / 60);
-      const seconds = totalSeconds % 60;
+  // Componente interno para renderizar cada card de pedido
+  const KitchenOrderCard: React.FC<{ order: Order; kitchenItems: any[] }> = ({ order, kitchenItems }) => {
+    const [timeRemaining, setTimeRemaining] = useState('');
+
+    const formatTimeRemaining = (ms: number) => {
+      const minutes = Math.floor(ms / 60000);
+      const seconds = Math.floor((ms % 60000) / 1000);
       return `${minutes > 0 ? `${minutes}m ` : ''}${seconds}s`;
     };
 
@@ -71,8 +67,11 @@ const KitchenDisplayComponent: React.FC = () => {
       let intervalId: number | undefined;
       if (order.auto_progress && order.next_auto_transition_time) {
         const updateTimer = () => {
-          const remaining = new Date(order.next_auto_transition_time).getTime() - Date.now();
-          setTimeRemaining(formatTimeRemaining(remaining > 0 ? remaining : 0));
+          const transitionTime = order.next_auto_transition_time;
+          if (transitionTime) {
+            const remaining = new Date(transitionTime).getTime() - Date.now();
+            setTimeRemaining(formatTimeRemaining(remaining > 0 ? remaining : 0));
+          }
         };
         updateTimer();
         intervalId = window.setInterval(updateTimer, 1000);

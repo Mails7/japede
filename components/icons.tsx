@@ -1,5 +1,5 @@
-
 import React from 'react';
+import { Pizza, ChefHat, Utensils, CookingPot, Receipt, DollarSign, Users, Trash, Eye, EyeOff, Home, ShoppingCart, Pencil, Clock, Settings, Group, Menu } from 'lucide-react';
 
 interface IconProps {
   className?: string;
@@ -18,24 +18,11 @@ export const PencilAltIcon: React.FC<IconProps> = ({ className, ...props }) => (
   </svg>
 );
 
-export const TrashIcon: React.FC<IconProps> = ({ className, ...props }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className || "w-6 h-6"} {...props}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12.56 0c1.153 0 2.24.03 3.22.077m3.22-.077L10.879 3.28a2.25 2.25 0 012.244-2.077h.093c.956 0 1.853.543 2.244 2.077L15.5 5.791" />
-  </svg>
-);
+export const TrashIcon = Trash;
 
-export const EyeIcon: React.FC<IconProps> = ({ className, ...props }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className || "w-6 h-6"} {...props}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-  </svg>
-);
+export const EyeIcon = Eye;
 
-export const EyeOffIcon: React.FC<IconProps> = ({ className, ...props }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className || "w-6 h-6"} {...props}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.243 4.243l-4.243-4.243" />
-  </svg>
-);
+export const EyeOffIcon = EyeOff;
 
 export const XIcon: React.FC<IconProps> = ({ className, ...props }) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className || "w-6 h-6"} {...props}>
@@ -79,24 +66,19 @@ export const CogIcon: React.FC<IconProps> = ({ className, ...props }) => (
   </svg>
 );
 
-export const HomeIcon: React.FC<IconProps> = ({ className, ...props }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className || "w-6 h-6"} {...props}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h7.5" />
-  </svg>
-);
+export const HomeIcon = Pizza;
 
-export const ShoppingCartIcon: React.FC<IconProps> = ({ className, ...props }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className || "w-6 h-6"} {...props}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
-  </svg>
-);
+export const ShoppingCartIcon = Pizza;
 
-export const FireIcon: React.FC<IconProps> = ({ className, ...props }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className || "w-6 h-6"} {...props}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M15.362 5.214A8.252 8.252 0 0112 21 8.25 8.25 0 016.038 7.048 8.287 8.287 0 009 9.6a8.983 8.983 0 013.361-6.867 8.21 8.21 0 003 2.48z" />
-    <path strokeLinecap="round" strokeLinejoin="round" d="M12 18a3.75 3.75 0 00.495-7.467 5.99 5.99 0 00-1.925 3.546 5.974 5.974 0 01-2.133-1.001A3.75 3.75 0 0012 18z" />
-  </svg>
-);
+export const PencilIcon = Utensils;
+
+export const ClockIcon = CookingPot;
+
+export const SettingsIcon = Utensils;
+
+export const GroupIcon = ChefHat;
+
+export const DollarSignIcon = DollarSign;
 
 export const TicketIcon: React.FC<IconProps> = ({ className, ...props }) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className || "w-6 h-6"} {...props}>
@@ -113,12 +95,6 @@ export const UserGroupIcon: React.FC<IconProps> = ({ className, ...props }) => (
 export const CurrencyDollarIcon: React.FC<IconProps> = ({ className, ...props }) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className || "w-6 h-6"} {...props}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-  </svg>
-);
-
-export const ClockIcon: React.FC<IconProps> = ({ className, ...props }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className || "w-6 h-6"} {...props}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
   </svg>
 );
 
@@ -225,7 +201,6 @@ export const ChevronRightIcon: React.FC<IconProps> = ({ className, ...props }) =
   </svg>
 );
 
-
 export const PlayIcon: React.FC<IconProps> = ({ className, ...props }) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className || "w-6 h-6"} {...props}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" />
@@ -263,11 +238,7 @@ export const CalendarIcon: React.FC<IconProps> = ({ className, ...props }) => (
   </svg>
 );
 
-export const UsersIcon: React.FC<IconProps> = ({ className, ...props }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className || "w-6 h-6"} {...props}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-3.741-1.5a3 3 0 00-3.741 1.5M15 11.678l-3.095-2.242a3.75 3.75 0 00-4.34-.225L4.5 11.678m0 0L3.252 9.236A2.25 2.25 0 014.5 6h15a2.25 2.25 0 011.248 3.236L15 11.678M15 11.678L12 13.5m0 0L9 11.678m3 1.822V18.75M12 18.75a3 3 0 01-3-3V6.75a3 3 0 013-3h0a3 3 0 013 3v9a3 3 0 01-3 3h0z" />
-  </svg>
-);
+export const UsersIcon = Users;
 
 export const ArrowsExpandIcon: React.FC<IconProps> = ({ className, ...props }) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className || "w-6 h-6"} {...props}>
@@ -283,9 +254,15 @@ export const DuplicateIcon: React.FC<IconProps> = ({ className, ...props }) => (
   </svg>
 );
 
-// FIX: Add SaveIcon (using ArrowDownTrayIcon path from Heroicons)
 export const SaveIcon: React.FC<IconProps> = ({ className, ...props }) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className || "w-6 h-6"} {...props}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
   </svg>
 );
+
+export const PizzaIcon = Pizza;
+export const CookingPotIcon = CookingPot;
+export const ChefHatIcon = ChefHat;
+export const UtensilsIcon = Utensils;
+export const ReceiptIcon = Receipt;
+export const MenuIcon = Menu;

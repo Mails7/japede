@@ -1,6 +1,6 @@
 import { Pool } from 'pg';
 import { config } from 'dotenv';
-import { supabase } from '../services/supabaseClient';
+import { supabase } from './supabaseClient';
 
 // Carrega as variáveis de ambiente
 config();

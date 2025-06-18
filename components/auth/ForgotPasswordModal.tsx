@@ -1,9 +1,8 @@
-
 import React, { useState } from 'react';
 import { useAppContext } from '../../contexts/AppContext';
 import Modal from '../shared/Modal';
 import LoadingSpinner from '../shared/LoadingSpinner';
-import { MailIcon } from '../icons';
+import { Mail } from 'lucide-react';
 
 interface ForgotPasswordModalProps {
   onClose: () => void;
@@ -35,7 +34,7 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ onClose }) =>
           <label htmlFor="forgotPasswordEmail" className="block text-sm font-medium text-gray-700 sr-only">Email</label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <MailIcon className="h-5 w-5 text-gray-400" />
+                <Mail className="h-5 w-5 text-gray-400" />
             </div>
             <input
                 type="email"

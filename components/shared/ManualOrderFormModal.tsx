@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAppContext } from '../../contexts/AppContext';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../../src/components/ui/dialog';
+import { Dialog, DialogHeader, DialogTitle, DialogFooter } from '../../src/components/ui/dialog';
 import { Button } from '../../src/components/ui/button';
 import { Input } from '../../src/components/ui/input';
 import { Label } from '../../src/components/ui/label';
@@ -119,7 +119,8 @@ const ManualOrderFormModal: React.FC<ManualOrderFormModalProps> = ({ isOpen, onC
       resetForm();
       onClose();
     } catch (error) {
-      setAlert({ message: `Erro ao criar pedido: ${error.message}`, type: 'error' });
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      setAlert({ message: `Erro ao criar pedido: ${errorMessage}`, type: 'error' });
     } finally {
       setIsSubmitting(false);
     }
@@ -131,244 +132,241 @@ const ManualOrderFormModal: React.FC<ManualOrderFormModalProps> = ({ isOpen, onC
   };
   
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Novo Pedido Manual</DialogTitle>
-        </DialogHeader>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
-          {/* Coluna 1: Dados do Cliente e Pedido */}
-          <div className="space-y-4">
+    <Dialog isOpen={isOpen} onClose={onClose} className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogHeader>
+        <DialogTitle>Novo Pedido Manual</DialogTitle>
+      </DialogHeader>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+        {/* Coluna 1: Dados do Cliente e Pedido */}
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="customerName">Nome do Cliente *</Label>
+            <Input
+              id="customerName"
+              value={customerName}
+              onChange={(e) => setCustomerName(e.target.value)}
+              placeholder="Nome do cliente"
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="customerPhone">Telefone</Label>
+            <Input
+              id="customerPhone"
+              value={customerPhone}
+              onChange={(e) => setCustomerPhone(e.target.value)}
+              placeholder="(00) 00000-0000"
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="orderType">Tipo de Pedido *</Label>
+            <Select
+              value={orderType}
+              onChange={(e) => setOrderType(e.target.value as OrderType)}
+            >
+              <SelectTrigger id="orderType">
+                <SelectValue placeholder="Selecione o tipo de pedido" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={OrderType.BALCAO}>Balcão</SelectItem>
+                <SelectItem value={OrderType.MESA}>Mesa</SelectItem>
+                <SelectItem value={OrderType.DELIVERY}>Delivery</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          {orderType === OrderType.MESA && (
             <div className="space-y-2">
-              <Label htmlFor="customerName">Nome do Cliente *</Label>
-              <Input
-                id="customerName"
-                value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
-                placeholder="Nome do cliente"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="customerPhone">Telefone</Label>
-              <Input
-                id="customerPhone"
-                value={customerPhone}
-                onChange={(e) => setCustomerPhone(e.target.value)}
-                placeholder="(00) 00000-0000"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="orderType">Tipo de Pedido *</Label>
+              <Label htmlFor="tableId">Mesa *</Label>
               <Select
-                value={orderType}
-                onValueChange={(value) => setOrderType(value as OrderType)}
+                value={tableId}
+                onChange={(e) => setTableId(e.target.value)}
               >
-                <SelectTrigger id="orderType">
-                  <SelectValue placeholder="Selecione o tipo de pedido" />
+                <SelectTrigger id="tableId">
+                  <SelectValue placeholder="Selecione uma mesa" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={OrderType.BALCAO}>Balcão</SelectItem>
-                  <SelectItem value={OrderType.MESA}>Mesa</SelectItem>
-                  <SelectItem value={OrderType.DELIVERY}>Delivery</SelectItem>
+                  {tables.map((table) => (
+                    <SelectItem key={table.id} value={table.id}>
+                      {table.name} ({table.capacity} lugares)
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
-            
-            {orderType === OrderType.MESA && (
-              <div className="space-y-2">
-                <Label htmlFor="tableId">Mesa *</Label>
-                <Select
-                  value={tableId}
-                  onValueChange={setTableId}
-                >
-                  <SelectTrigger id="tableId">
-                    <SelectValue placeholder="Selecione uma mesa" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {tables.map((table) => (
-                      <SelectItem key={table.id} value={table.id}>
-                        {table.name} ({table.capacity} lugares)
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-            
-            {orderType === OrderType.DELIVERY && (
-              <div className="space-y-2">
-                <Label htmlFor="customerAddress">Endereço de Entrega *</Label>
-                <Textarea
-                  id="customerAddress"
-                  value={customerAddress}
-                  onChange={(e) => setCustomerAddress(e.target.value)}
-                  placeholder="Endereço completo para entrega"
-                  rows={3}
-                />
-              </div>
-            )}
-            
+          )}
+          
+          {orderType === OrderType.DELIVERY && (
             <div className="space-y-2">
-              <Label htmlFor="paymentMethod">Forma de Pagamento</Label>
-              <Select
-                value={paymentMethod}
-                onValueChange={(value) => setPaymentMethod(value as PaymentMethod)}
-              >
-                <SelectTrigger id="paymentMethod">
-                  <SelectValue placeholder="Selecione a forma de pagamento" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={PaymentMethod.DINHEIRO}>Dinheiro</SelectItem>
-                  <SelectItem value={PaymentMethod.CARTAO_DEBITO}>Cartão de Débito</SelectItem>
-                  <SelectItem value={PaymentMethod.CARTAO_CREDITO}>Cartão de Crédito</SelectItem>
-                  <SelectItem value={PaymentMethod.PIX}>PIX</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="notes">Observações</Label>
+              <Label htmlFor="customerAddress">Endereço de Entrega *</Label>
               <Textarea
-                id="notes"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Observações sobre o pedido"
+                id="customerAddress"
+                value={customerAddress}
+                onChange={(e) => setCustomerAddress(e.target.value)}
+                placeholder="Endereço completo para entrega"
                 rows={3}
               />
             </div>
+          )}
+          
+          <div className="space-y-2">
+            <Label htmlFor="paymentMethod">Forma de Pagamento</Label>
+            <Select
+              value={paymentMethod}
+              onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
+            >
+              <SelectTrigger id="paymentMethod">
+                <SelectValue placeholder="Selecione a forma de pagamento" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={PaymentMethod.DINHEIRO}>Dinheiro</SelectItem>
+                <SelectItem value={PaymentMethod.CARTAO_DEBITO}>Cartão de Débito</SelectItem>
+                <SelectItem value={PaymentMethod.CARTAO_CREDITO}>Cartão de Crédito</SelectItem>
+                <SelectItem value={PaymentMethod.PIX}>PIX</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           
-          {/* Coluna 2: Itens do Pedido */}
-          <div className="space-y-4">
-            <div className="p-4 border rounded-md bg-gray-50">
-              <h3 className="font-medium mb-2">Adicionar Item</h3>
-              <div className="space-y-3">
-                <div className="space-y-2">
-                  <Label htmlFor="itemName">Nome do Item *</Label>
-                  <Input
-                    id="itemName"
-                    value={itemName}
-                    onChange={(e) => setItemName(e.target.value)}
-                    placeholder="Ex: Pizza de Calabresa"
-                  />
-                </div>
-                
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="itemPrice">Preço (R$) *</Label>
-                    <Input
-                      id="itemPrice"
-                      type="number"
-                      step="0.01"
-                      min="0.01"
-                      value={itemPrice}
-                      onChange={(e) => setItemPrice(e.target.value)}
-                      placeholder="0.00"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="itemQuantity">Quantidade *</Label>
-                    <Input
-                      id="itemQuantity"
-                      type="number"
-                      min="1"
-                      value={itemQuantity}
-                      onChange={(e) => setItemQuantity(e.target.value)}
-                    />
-                  </div>
-                </div>
-                
-                <Button 
-                  onClick={handleAddItem}
-                  className="w-full"
-                >
-                  Adicionar Item
-                </Button>
-              </div>
-            </div>
-            
-            <div>
-              <h3 className="font-medium mb-2">Itens do Pedido</h3>
-              {items.length === 0 ? (
-                <div className="text-center py-4 border rounded-md bg-gray-50 text-gray-500">
-                  Nenhum item adicionado
-                </div>
-              ) : (
-                <div className="border rounded-md overflow-hidden">
-                  <table className="w-full border-collapse">
-                    <thead className="bg-gray-100">
-                      <tr>
-                        <th className="text-left p-2">Item</th>
-                        <th className="text-center p-2">Qtd</th>
-                        <th className="text-right p-2">Preço</th>
-                        <th className="text-right p-2">Subtotal</th>
-                        <th className="p-2"></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {items.map((item) => (
-                        <tr key={item.id} className="border-t">
-                          <td className="p-2">{item.name}</td>
-                          <td className="p-2 text-center">{item.quantity}</td>
-                          <td className="p-2 text-right">
-                            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.price)}
-                          </td>
-                          <td className="p-2 text-right">
-                            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.price * item.quantity)}
-                          </td>
-                          <td className="p-2 text-center">
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              onClick={() => handleRemoveItem(item.id)}
-                              className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
-                            >
-                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M3 6h18"></path>
-                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
-                                <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                              </svg>
-                            </Button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                    <tfoot className="bg-gray-50">
-                      <tr className="border-t">
-                        <td colSpan={3} className="p-2 text-right font-medium">Total:</td>
-                        <td className="p-2 text-right font-medium">
-                          {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(calculateTotal())}
-                        </td>
-                        <td></td>
-                      </tr>
-                    </tfoot>
-                  </table>
-                </div>
-              )}
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="notes">Observações</Label>
+            <Textarea
+              id="notes"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Observações sobre o pedido"
+              rows={3}
+            />
           </div>
         </div>
         
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose} disabled={isSubmitting}>
-            Cancelar
-          </Button>
-          <Button onClick={handleSubmit} disabled={isSubmitting || items.length === 0}>
-            {isSubmitting ? (
-              <div className="flex items-center">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                Criando...
+        {/* Coluna 2: Itens do Pedido */}
+        <div className="space-y-4">
+          <div className="p-4 border rounded-md bg-gray-50">
+            <h3 className="font-medium mb-2">Adicionar Item</h3>
+            <div className="space-y-3">
+              <div className="space-y-2">
+                <Label htmlFor="itemName">Nome do Item *</Label>
+                <Input
+                  id="itemName"
+                  value={itemName}
+                  onChange={(e) => setItemName(e.target.value)}
+                  placeholder="Ex: Pizza de Calabresa"
+                />
+              </div>
+              
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-2">
+                  <Label htmlFor="itemPrice">Preço (R$) *</Label>
+                  <Input
+                    id="itemPrice"
+                    type="number"
+                    step="0.01"
+                    min="0.01"
+                    value={itemPrice}
+                    onChange={(e) => setItemPrice(e.target.value)}
+                    placeholder="0.00"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="itemQuantity">Quantidade *</Label>
+                  <Input
+                    id="itemQuantity"
+                    type="number"
+                    min="1"
+                    value={itemQuantity}
+                    onChange={(e) => setItemQuantity(e.target.value)}
+                  />
+                </div>
+              </div>
+              
+              <Button 
+                onClick={handleAddItem}
+                className="w-full"
+              >
+                Adicionar Item
+              </Button>
+            </div>
+          </div>
+          
+          <div>
+            <h3 className="font-medium mb-2">Itens do Pedido</h3>
+            {items.length === 0 ? (
+              <div className="text-center py-4 border rounded-md bg-gray-50 text-gray-500">
+                Nenhum item adicionado
               </div>
             ) : (
-              'Criar Pedido'
+              <div className="border rounded-md overflow-hidden">
+                <table className="w-full border-collapse">
+                  <thead className="bg-gray-100">
+                    <tr>
+                      <th className="text-left p-2">Item</th>
+                      <th className="text-center p-2">Qtd</th>
+                      <th className="text-right p-2">Preço</th>
+                      <th className="text-right p-2">Subtotal</th>
+                      <th className="p-2"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {items.map((item) => (
+                      <tr key={item.id} className="border-t">
+                        <td className="p-2">{item.name}</td>
+                        <td className="p-2 text-center">{item.quantity}</td>
+                        <td className="p-2 text-right">
+                          {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.price)}
+                        </td>
+                        <td className="p-2 text-right">
+                          {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.price * item.quantity)}
+                        </td>
+                        <td className="p-2 text-center">
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => handleRemoveItem(item.id)}
+                            className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M3 6h18"></path>
+                              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
+                              <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                            </svg>
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot className="bg-gray-50">
+                    <tr className="border-t">
+                      <td colSpan={3} className="p-2 text-right font-medium">Total:</td>
+                      <td className="p-2 text-right font-medium">
+                        {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(calculateTotal())}
+                      </td>
+                      <td></td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
             )}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
+          </div>
+        </div>
+      </div>
+      
+      <DialogFooter>
+        <Button variant="outline" onClick={onClose} disabled={isSubmitting}>
+          Cancelar
+        </Button>
+        <Button onClick={handleSubmit} disabled={isSubmitting || items.length === 0}>
+          {isSubmitting ? (
+            <div className="flex items-center">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+              Criando...
+            </div>
+          ) : (
+            'Criar Pedido'
+          )}
+        </Button>
+      </DialogFooter>
     </Dialog>
   );
 };

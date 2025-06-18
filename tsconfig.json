@@ -26,6 +26,26 @@
       "@/*" :  ["./*"]
     }
   },
-  "include": ["src", "**/*.ts", "**/*.tsx"],
+  "include": [
+    "src/**/*",
+    "components/**/*",
+    "pages/**/*",
+    "contexts/**/*",
+    "services/**/*",
+    "utils/**/*",
+    "types.ts",
+    "App.tsx",
+    "index.tsx"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "build",
+    "*.config.ts",
+    "*.config.js",
+    "vite.config.ts",
+    "postcss.config.js",
+    "tailwind.config.js"
+  ],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

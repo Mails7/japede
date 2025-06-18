@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { useAppContext } from '../contexts/AppContext';
-// Fixed: Replaced UsersIcon with UserGroupIcon
-import { ClockIcon, ShoppingCartIcon, UserGroupIcon, CurrencyDollarIcon, ChartBarIcon, MenuAlt1Icon as ImportedMenuAlt1Icon } from '../components/icons'; // Example icons
+import { CookingPotIcon, PizzaIcon, UsersIcon, DollarSignIcon, MenuIcon } from '../components/icons';
+import { BarChart3 } from 'lucide-react';
 import { OrderStatus } from '../types';
 
 const StatCard: React.FC<{ title: string; value: string | number; icon: React.ReactNode; colorClass: string }> = ({ title, value, icon, colorClass }) => (
@@ -37,25 +36,25 @@ const DashboardPage: React.FC = () => {
         <StatCard 
           title="Pedidos Pendentes" 
           value={pendingOrders} 
-          icon={<ClockIcon className="w-8 h-8 text-white"/>} 
+          icon={<CookingPotIcon className="w-8 h-8 text-white"/>} 
           colorClass="bg-yellow-500"
         />
         <StatCard 
           title="Receita de Hoje (Entregues)" 
           value={`R$ ${totalRevenueToday.toFixed(2)}`}
-          icon={<CurrencyDollarIcon className="w-8 h-8 text-white"/>} 
+          icon={<DollarSignIcon className="w-8 h-8 text-white"/>} 
           colorClass="bg-green-500"
         />
         <StatCard 
           title="Itens Ativos no Cardápio" 
           value={activeMenuItems}
-          icon={<ImportedMenuAlt1Icon className="w-8 h-8 text-white"/>} 
+          icon={<MenuIcon className="w-8 h-8 text-white"/>} 
           colorClass="bg-blue-500"
         />
         <StatCard 
           title="Total de Pedidos Hoje" 
           value={orders.filter(o => new Date(o.order_time).toDateString() === new Date().toDateString()).length}
-          icon={<ShoppingCartIcon className="w-8 h-8 text-white"/>}
+          icon={<PizzaIcon className="w-8 h-8 text-white"/>}
           colorClass="bg-purple-500"
         />
       </div>
@@ -85,7 +84,7 @@ const DashboardPage: React.FC = () => {
           <p className="text-gray-600">Itens Indisponíveis: <span className="font-semibold">{menuItems.filter(item => !item.available).length}</span></p>
            {/* Placeholder for a chart */}
           <div className="mt-4 h-48 bg-gray-100 rounded flex items-center justify-center">
-            <ChartBarIcon className="w-16 h-16 text-gray-400"/>
+            <BarChart3 className="w-16 h-16 text-gray-400"/>
             <p className="text-gray-500 ml-2">Gráfico de exemplo em breve</p>
           </div>
         </div>

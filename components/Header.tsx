@@ -1,7 +1,9 @@
-
 import React from 'react';
 import { View } from '../App'; // Import View for setCurrentView
-import { BellIcon, CogIcon } from './icons';
+import { BellIcon, UtensilsIcon } from '../components/icons';
+import { useAppContext } from '../contexts/AppContext';
+import { PizzaIcon, ChefHatIcon } from '../components/icons';
+import { Bell, Search } from 'lucide-react';
 
 interface HeaderProps {
   setCurrentView: (view: View) => void; // To navigate to settings
@@ -29,7 +31,7 @@ const Header: React.FC<HeaderProps> = ({ setCurrentView }) => {
               className="text-gray-300 hover:text-white focus:outline-none p-1"
               aria-label="Configurações"
             >
-              <CogIcon className="w-5 h-5 sm:w-6 sm:h-6" />
+              <UtensilsIcon className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
           </div>
         </div>

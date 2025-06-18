@@ -7,6 +7,7 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { CashRegisterSessionStatus, CashAdjustmentType, PaymentMethod } from '../../types';
+import { DollarSignIcon, ReceiptIcon, CookingPotIcon } from '../icons';
 import { DollarSign, TrendingUp, ArrowDownCircle, ArrowUpCircle, PlusCircle, MinusCircle } from 'lucide-react';
 
 const FinanceiroComponent: React.FC = () => {
@@ -221,7 +222,7 @@ const FinanceiroComponent: React.FC = () => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center">
-            <DollarSign className="mr-2 h-5 w-5 text-primary" />
+            <DollarSignIcon className="mr-2 h-5 w-5 text-primary" />
             Status do Caixa
           </CardTitle>
         </CardHeader>
@@ -259,7 +260,7 @@ const FinanceiroComponent: React.FC = () => {
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
                         <p className="text-sm font-medium text-blue-600">Vendas Totais</p>
-                        <TrendingUp className="h-4 w-4 text-blue-600" />
+                        <ReceiptIcon className="h-4 w-4 text-blue-600" />
                       </div>
                       <p className="text-2xl font-bold text-blue-700 mt-2">{formatCurrency(summary.sales)}</p>
                     </CardContent>
@@ -268,7 +269,7 @@ const FinanceiroComponent: React.FC = () => {
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
                         <p className="text-sm font-medium text-green-600">Dinheiro</p>
-                        <DollarSign className="h-4 w-4 text-green-600" />
+                        <DollarSignIcon className="h-4 w-4 text-green-600" />
                       </div>
                       <p className="text-2xl font-bold text-green-700 mt-2">{formatCurrency(summary.cash)}</p>
                     </CardContent>
@@ -277,10 +278,7 @@ const FinanceiroComponent: React.FC = () => {
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
                         <p className="text-sm font-medium text-purple-600">Cartões</p>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-purple-600">
-                          <rect width="20" height="14" x="2" y="5" rx="2" />
-                          <line x1="2" x2="22" y1="10" y2="10" />
-                        </svg>
+                        <CookingPotIcon className="text-purple-600" />
                       </div>
                       <p className="text-2xl font-bold text-purple-700 mt-2">{formatCurrency(summary.credit + summary.debit)}</p>
                     </CardContent>
@@ -289,9 +287,7 @@ const FinanceiroComponent: React.FC = () => {
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
                         <p className="text-sm font-medium text-yellow-600">PIX</p>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-yellow-600">
-                          <path d="M12 2v20M2 12h20" />
-                        </svg>
+                        <CookingPotIcon className="text-yellow-600" />
                       </div>
                       <p className="text-2xl font-bold text-yellow-700 mt-2">{formatCurrency(summary.pix)}</p>
                     </CardContent>

@@ -1,6 +1,6 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { MenuItem } from '../../types';
+import { PizzaIcon, UtensilsIcon } from '../icons';
 import { PlusIcon } from '../icons'; 
 import { DEFAULT_PIZZA_IMAGE } from '../../constants';
 

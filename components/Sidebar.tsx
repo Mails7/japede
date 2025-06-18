@@ -1,16 +1,14 @@
-
 import React from 'react';
 import { View } from '../App';
 import { 
-  HomeIcon, 
-  BookOpenIcon, // Changed from MenuAlt1Icon
-  ShoppingCartIcon, 
-  FireIcon, 
-  TicketIcon, 
-  UserGroupIcon, 
-  CurrencyDollarIcon, 
-  CogIcon 
-} from './icons'; 
+  PizzaIcon, 
+  MenuIcon, 
+  CookingPotIcon, 
+  ReceiptIcon, 
+  ChefHatIcon, 
+  DollarSignIcon, 
+  UtensilsIcon 
+} from '../components/icons';
 
 interface SidebarProps {
   currentView: View;
@@ -18,14 +16,14 @@ interface SidebarProps {
 }
 
 const navItems = [
-  { view: 'dashboard' as View, label: 'Dashboard', icon: HomeIcon },
-  { view: 'menu' as View, label: 'Cardápio', icon: BookOpenIcon }, // Use BookOpenIcon
-  { view: 'orders' as View, label: 'Pedidos', icon: ShoppingCartIcon },
-  { view: 'kitchen' as View, label: 'Cozinha', icon: FireIcon },
-  { view: 'tables' as View, label: 'Mesas', icon: TicketIcon }, 
-  { view: 'customers' as View, label: 'Clientes', icon: UserGroupIcon },
-  { view: 'financials' as View, label: 'Financeiro', icon: CurrencyDollarIcon },
-  { view: 'settings' as View, label: 'Configurações', icon: CogIcon },
+  { view: 'dashboard' as View, label: 'Dashboard', icon: PizzaIcon },
+  { view: 'menu' as View, label: 'Cardápio', icon: MenuIcon },
+  { view: 'orders' as View, label: 'Pedidos', icon: PizzaIcon },
+  { view: 'kitchen' as View, label: 'Cozinha', icon: CookingPotIcon },
+  { view: 'tables' as View, label: 'Mesas', icon: ReceiptIcon }, 
+  { view: 'customers' as View, label: 'Clientes', icon: ChefHatIcon },
+  { view: 'financials' as View, label: 'Financeiro', icon: DollarSignIcon },
+  { view: 'settings' as View, label: 'Configurações', icon: UtensilsIcon },
 ];
 
 const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView }) => {

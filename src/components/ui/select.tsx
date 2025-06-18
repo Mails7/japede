@@ -14,7 +14,7 @@ export const SelectTrigger: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ 
   <div {...props}>{children}</div>
 );
 
-export const SelectValue: React.FC<{ placeholder?: string }> = ({ placeholder, children }) => (
+export const SelectValue: React.FC<{ placeholder?: string; children?: React.ReactNode }> = ({ placeholder, children }) => (
   <span>{children || placeholder}</span>
 );
 

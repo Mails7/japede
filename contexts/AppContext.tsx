@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useReducer, useEffect, ReactNode, useCallback, useState, useRef } from 'react';
 import { supabase, getArray, handleSupabaseError } from '../services/supabaseClient';
 import { 
@@ -200,6 +199,7 @@ interface AppContextProps extends AppState {
   signUp: (email: string, password: string, fullName: string, phone?: string) => Promise<SupabaseUser | null>;
   signIn: (email: string, password: string) => Promise<SupabaseUser | null>;
   signOut: () => Promise<void>;
+  requestPasswordReset: (email: string) => Promise<boolean>;
   updateUserProfile: (profileData: Partial<Profile>) => Promise<Profile | null>;
 }
 
@@ -220,7 +220,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const mapRawMenuItemToMenuItem = (raw: RawMenuItem): MenuItem => ({ ...raw, send_to_kitchen: raw.send_to_kitchen ?? true, sizes: raw.sizes || undefined, allow_half_and_half: raw.allow_half_and_half || undefined });
   const mapRawTableToTable = (raw: RawTable): Table => ({ ...raw });
   const mapRawOrderToOrder = (raw: RawOrder, items: OrderItem[] = []): Order => ({ ...raw, items, customer_id: raw.customer_id || null });
-  const mapRawOrderItemToOrderItem = (raw: RawOrderItem): OrderItem => ({ ...raw });
+  const mapRawOrderItemToOrderItem = (raw: RawOrderItem): OrderItem => ({ 
+    ...raw, 
+    first_half_flavor: raw.first_half_flavor || undefined,
+    second_half_flavor: raw.second_half_flavor || undefined
+  });
   const mapRawCashRegisterSessionToCashRegisterSession = (raw: RawCashRegisterSession): CashRegisterSession => ({ ...raw });
   const mapRawCashAdjustmentToCashAdjustment = (raw: RawCashAdjustment): CashAdjustment => ({ ...raw }); // New mapper
 
@@ -822,6 +826,24 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     finally { dispatch({ type: 'SET_AUTH_LOADING', payload: false }); }
   }, [setAlertCb]);
 
+  const requestPasswordReset = useCallback(async (email: string): Promise<boolean> => {
+    dispatch({ type: 'SET_AUTH_LOADING', payload: true });
+    try {
+        const { data, error } = await supabase.auth.resetPasswordForEmail(email);
+        if (error) {
+            handleSupabaseError({ error, customMessage: "Falha ao enviar email de redefinição de senha." });
+            return false;
+        }
+        setAlertCb({ message: "Email de redefinição de senha enviado! Verifique sua caixa de entrada.", type: "success" });
+        return true;
+    } catch (e) {
+        handleSupabaseError({ error: e as Error, customMessage: "Erro ao enviar email de redefinição de senha." });
+        return false;
+    } finally {
+        dispatch({ type: 'SET_AUTH_LOADING', payload: false });
+    }
+  }, [setAlertCb]);
+
 
   // --- Effects ---
   const fetchInitialAdminData = useCallback(async () => {
@@ -1009,7 +1031,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     removeFromCart, updateCartQuantity, clearCart, setCustomerDetails: setCustomerDetailsCb, placeOrder,
     setAlert: setAlertCb, openCashRegister, closeCashRegister, addCashAdjustment, // Added addCashAdjustment
     closeTableAccount,
-    signUp, signIn, signOut, updateUserProfile,
+    signUp, signIn, signOut, requestPasswordReset, updateUserProfile,
   };
 
   return <AppContext.Provider value={contextValue}>{children}</AppContext.Provider>;

@@ -1,8 +1,7 @@
 import React from 'react';
-import { useAppContext } from '../../contexts/AppContext';
-import { Card, CardContent, CardHeader, CardTitle } from '../../src/components/ui/card';
+import { CardContent, CardHeader, CardTitle } from '../../src/components/ui/card';
 import { Button } from '../../src/components/ui/button';
-import { ArrowRight, Clock, DollarSign } from 'lucide-react';
+import { CookingPotIcon, DollarSignIcon } from '../icons';
 import { Order, OrderStatus } from '../../types';
 import { useNavigate } from 'react-router-dom';
 
@@ -10,17 +9,14 @@ interface OrderCardProps {
   order: Order;
   onOpenDetails: (order: Order) => void;
   onUpdateStatus: (id: string, status: OrderStatus, manual?: boolean) => void;
-  onToggleAutoProgress: (orderId: string) => void;
 }
 
 const OrderCardComponent: React.FC<OrderCardProps> = ({
   order,
   onOpenDetails,
-  onUpdateStatus,
-  onToggleAutoProgress
+  onUpdateStatus
 }) => {
   const navigate = useNavigate();
-  const { formatCurrency } = useAppContext();
   
   // Determinar cor do card baseado no status
   let statusColor = 'bg-gray-100';
@@ -75,6 +71,14 @@ const OrderCardComponent: React.FC<OrderCardProps> = ({
     }
   };
 
+  // Formatar moeda
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(value);
+  };
+
   // Determinar próxima ação baseada no status
   const getNextActionButton = () => {
     switch (order.status) {
@@ -124,7 +128,7 @@ const OrderCardComponent: React.FC<OrderCardProps> = ({
   };
 
   return (
-    <Card 
+    <div 
       className={`${statusColor} border shadow-sm hover:shadow-md transition-shadow cursor-pointer`}
       onClick={() => onOpenDetails(order)}
     >
@@ -143,7 +147,7 @@ const OrderCardComponent: React.FC<OrderCardProps> = ({
               {order.customer_name}
             </div>
             <div className="flex items-center text-xs text-gray-500">
-              <Clock className="h-3 w-3 mr-1" />
+              <CookingPotIcon className="h-3 w-3 mr-1" />
               {formatTime(order.order_time)}
             </div>
           </div>
@@ -154,14 +158,14 @@ const OrderCardComponent: React.FC<OrderCardProps> = ({
           
           <div className="flex justify-between items-center pt-1">
             <div className="flex items-center font-semibold">
-              <DollarSign className="h-4 w-4 text-green-600" />
+              <DollarSignIcon className="h-4 w-4 text-green-600" />
               {formatCurrency(order.total_amount)}
             </div>
             {getNextActionButton()}
           </div>
         </div>
       </CardContent>
-    </Card>
+    </div>
   );
 };
 

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAppContext } from '../../contexts/AppContext';
 import Modal from '../shared/Modal';
 import LoadingSpinner from '../shared/LoadingSpinner';
-import { UserCircleIcon, MailIcon, KeyIcon } from 'lucide-react';
+import { ChefHat, Mail, Key } from 'lucide-react';
 
 interface AdminRegisterModalProps {
   onClose: () => void;
@@ -46,7 +46,7 @@ const AdminRegisterModal: React.FC<AdminRegisterModalProps> = ({ onClose }) => {
           <label htmlFor="adminFullName" className="block text-sm font-medium text-gray-700 sr-only">Nome Completo</label>
            <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <UserCircleIcon className="h-5 w-5 text-gray-400" />
+                    <ChefHat className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
                     type="text" id="adminFullName" value={fullName} onChange={(e) => setFullName(e.target.value)}
@@ -60,7 +60,7 @@ const AdminRegisterModal: React.FC<AdminRegisterModalProps> = ({ onClose }) => {
           <label htmlFor="adminEmail" className="block text-sm font-medium text-gray-700 sr-only">Email</label>
             <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <MailIcon className="h-5 w-5 text-gray-400" />
+                    <Mail className="h-5 w-5 text-gray-400" />
                 </div>
                  <input
                     type="email" id="adminEmail" value={email} onChange={(e) => setEmail(e.target.value)}
@@ -74,7 +74,7 @@ const AdminRegisterModal: React.FC<AdminRegisterModalProps> = ({ onClose }) => {
           <label htmlFor="adminPassword" className="block text-sm font-medium text-gray-700 sr-only">Senha</label>
            <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <KeyIcon className="h-5 w-5 text-gray-400" />
+                    <Key className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
                     type="password" id="adminPassword" value={password} onChange={(e) => setPassword(e.target.value)}
@@ -88,7 +88,7 @@ const AdminRegisterModal: React.FC<AdminRegisterModalProps> = ({ onClose }) => {
           <label htmlFor="adminConfirmPassword" className="block text-sm font-medium text-gray-700 sr-only">Confirmar Senha</label>
            <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <KeyIcon className="h-5 w-5 text-gray-400" />
+                    <Key className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
                     type="password" id="adminConfirmPassword" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
