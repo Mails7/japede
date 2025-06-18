@@ -1,9 +1,8 @@
-
 import React, { useState } from 'react';
 import { useAppContext } from '../../contexts/AppContext';
 import Modal from '../shared/Modal';
 import LoadingSpinner from '../shared/LoadingSpinner';
-import { UserCircleIcon, EnvelopeIcon, KeyIcon } from '../icons';
+import { UserCircleIcon, MailIcon, KeyIcon } from 'lucide-react';
 
 interface AdminRegisterModalProps {
   onClose: () => void;

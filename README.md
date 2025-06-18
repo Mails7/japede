@@ -27,6 +27,8 @@ Sistema completo de gerenciamento de pedidos online com interface moderna e func
 
 ## 🔧 Instalação
 
+### **Opção 1: Instalação Local**
+
 1. **Clone o repositório**
 ```bash
 git clone <url-do-repositorio>
@@ -49,7 +51,7 @@ VITE_SUPABASE_ANON_KEY=sua_chave_anonima_do_supabase
 VITE_GEMINI_API_KEY=sua_chave_do_gemini
 
 # Database Configuration (para scripts)
-DATABASE_URL=sua_url_do_banco_postgres
+DATABASE_URL=postgresql://postgres:password@localhost:5432/japed
 NODE_ENV=development
 ```
 
@@ -65,6 +67,66 @@ npm run db:seed
 5. **Inicie o servidor de desenvolvimento**
 ```bash
 npm run dev
+```
+
+### **Opção 2: Instalação na VPS**
+
+1. **Acesse sua VPS via SSH**
+```bash
+ssh usuario@seu-ip-vps
+```
+
+2. **Clone o repositório**
+```bash
+git clone <url-do-repositorio>
+cd japed
+```
+
+3. **Instale as dependências**
+```bash
+npm install
+```
+
+4. **Configure as variáveis de ambiente**
+```bash
+nano .env
+```
+
+Adicione as seguintes variáveis:
+```env
+# Supabase Configuration
+VITE_SUPABASE_URL=sua_url_do_supabase
+VITE_SUPABASE_ANON_KEY=sua_chave_anonima_do_supabase
+SUPABASE_SERVICE_ROLE_KEY=sua_chave_de_servico_do_supabase
+
+# API Keys
+VITE_GEMINI_API_KEY=sua_chave_do_gemini
+
+# Application Settings
+VITE_APP_NAME=JáPede
+VITE_APP_DESCRIPTION=Sistema de pedidos online
+```
+
+5. **Configure o Supabase (Método Recomendado)**
+
+**A. Via SQL Editor do Supabase:**
+- Acesse o painel do Supabase
+- Vá para SQL Editor
+- Execute o conteúdo do arquivo `database-setup.sql`
+
+**B. Via Script Automático:**
+```bash
+node setup-supabase.js
+```
+
+6. **Inicie o servidor**
+```bash
+# Desenvolvimento
+npm run dev
+
+# Produção
+npm run build
+npm run preview
 ```
 
 ## 🗄️ Configuração do Supabase
@@ -128,12 +190,18 @@ Crie uma Edge Function no Supabase para integrar com a API do Gemini.
 
 ## 🔧 Scripts Disponíveis
 
-- `npm run dev` - Inicia o servidor de desenvolvimento
+- `npm run dev` - Inicia o servidor de desenvolvimento (porta 3001)
 - `npm run build` - Gera build de produção
 - `npm run preview` - Visualiza o build de produção
 - `npm run db:migrate` - Executa migrações do banco
 - `npm run db:seed` - Popula o banco com dados iniciais
 - `npm run db:reset` - Reseta o banco de dados
+
+## 🌐 URLs de Acesso
+
+- **Local**: `http://localhost:3001`
+- **Rede Local**: `http://192.168.x.x:3001`
+- **VPS**: `http://seu-ip-vps:3001`
 
 ## 🐛 Solução de Problemas
 
@@ -142,10 +210,13 @@ Crie uma Edge Function no Supabase para integrar com a API do Gemini.
 - Confirme se as políticas RLS estão aplicadas
 - Teste a conexão no painel do Supabase
 
-### Erro de migração
-- Execute `npm run db:reset` para limpar o banco
-- Execute `npm run db:migrate` novamente
-- Verifique os logs de erro
+### Erro de migração na VPS
+- Use o arquivo `database-setup.sql` no SQL Editor do Supabase
+- Ou execute `node setup-supabase.js` com a chave de serviço
+
+### Erro de porta em uso
+- O sistema usa a porta 3001 por padrão
+- Se necessário, altere em `vite.config.ts`
 
 ## 📄 Licença
 
