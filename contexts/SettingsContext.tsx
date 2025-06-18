@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer, useEffect, ReactNode, useCallback } from 'react';
-import { supabase, getArray, handleSupabaseError } from '../services/supabaseClient';
+import { supabase } from '../services/supabaseClient';
 import { AppSettings, StoreSettings, PaymentSettings, WhatsAppSettings, NotificationSettings, OpeningHoursEntry, DeliveryFeeType } from '../types';
 import { useAppContext } from './AppContext'; // To use setAlert
 
