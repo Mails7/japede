@@ -1,28 +1,32 @@
-
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 console.log('[SupabaseClient] Initializing Supabase client...');
 
-// IMPORTANT: These values are hardcoded based on your request for this specific AI interaction.
-// In a real-world application, these MUST come from environment variables
-// (e.g., process.env.REACT_APP_SUPABASE_URL or window._env_.SUPABASE_URL if injected at runtime).
-// DO NOT commit hardcoded keys to your repository.
-const supabaseUrl = (window as any).SUPABASE_URL;
-const supabaseAnonKey = (window as any).SUPABASE_ANON_KEY;
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-console.log(`[SupabaseClient] SUPABASE_URL from window: ${supabaseUrl ? 'Loaded' : 'MISSING!'}`);
-console.log(`[SupabaseClient] SUPABASE_ANON_KEY from window: ${supabaseAnonKey ? 'Loaded' : 'MISSING!'}`);
-
+console.log(`[SupabaseClient] SUPABASE_URL from environment variables: ${supabaseUrl ? 'Loaded' : 'MISSING!'}`);
+console.log(`[SupabaseClient] SUPABASE_ANON_KEY from environment variables: ${supabaseAnonKey ? 'Loaded' : 'MISSING!'}`);
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  const message = 'Supabase URL or Anon Key is missing from window object. Cannot initialize Supabase client. Ensure window.SUPABASE_URL and window.SUPABASE_ANON_KEY are set in index.html before this script runs.';
-  console.error(`[SupabaseClient] CRITICAL ERROR: ${message}`);
-  alert(message); 
+  const message = 'Supabase URL ou Anon Key não encontrados nas variáveis de ambiente. Verifique se o arquivo .env está configurado corretamente.';
+  console.error(`[SupabaseClient] ERRO CRÍTICO: ${message}`);
   throw new Error(message);
 }
 
-export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseAnonKey);
-console.log('[SupabaseClient] Supabase client instance created.');
+export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+  },
+  realtime: {
+    params: {
+      eventsPerSecond: 10,
+    },
+  },
+});
+
+console.log('[SupabaseClient] Cliente Supabase inicializado com sucesso.');
 
 // Helper function to convert Supabase data (with potential single object response) to an array
 export function getArray<T>(data: T | T[] | null): T[] {
@@ -42,7 +46,7 @@ const ultraSafeString = (val: any, defaultString: string = '[Unconvertible Value
     if (typeof val === 'object') {
         try {
             const cache = new Set();
-            return JSON.stringify(val, (key, value) => {
+            return JSON.stringify(val, (_key, value) => {
                 if (typeof value === 'object' && value !== null) {
                     if (cache.has(value)) {
                         return '[Circular Reference]';

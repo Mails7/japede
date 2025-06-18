@@ -1,6 +1,6 @@
 import React from 'react';
-import { useAppContext } from '../../contexts/AppContext';
-import KitchenDisplayComponent from '../../components/kitchen/KitchenDisplayComponent';
+import { useAppContext } from '../contexts/AppContext';
+import KitchenDisplayComponent from '../components/kitchen/KitchenDisplayComponent';
 
 const KitchenDisplayPage: React.FC = () => {
   const { isLoading } = useAppContext();

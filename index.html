@@ -1,19 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>JáPede</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    // WARNING: Hardcoding Supabase keys here is for demonstration in this environment ONLY.
-    // In a real production app, these should be set as environment variables
-    // and handled securely, typically during a build process or by the hosting environment.
-    window.SUPABASE_URL = 'https://cjydlrljzamdszkbdcvy.supabase.co';
-    window.SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNqeWRscmxqemFtZHN6a2JkY3Z5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwMTA0NDcsImV4cCI6MjA2MzU4NjQ0N30.YgHvJf6MvR8t3jcN13iQsXaQQfEQTva-prhoFydD5AM';
-    // API_KEY for Gemini will be handled by a Supabase Edge Function
-    // window.API_KEY = 'YOUR_GEMINI_API_KEY'; // This line should be removed or handled securely if needed for other client-side SDKs
-
     tailwind.config = {
       theme: {
         extend: {
@@ -32,7 +24,7 @@
           }
         }
       }
-    }; // Explicit semicolon added
+    };
   </script>
 <script type="importmap">
 {
@@ -49,5 +41,4 @@
   <div id="root"></div>
   <script type="module" src="/index.tsx"></script>
 </body>
-</html><link rel="stylesheet" href="index.css">
-<script src="index.tsx" type="module"></script>
+</html>

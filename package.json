@@ -6,15 +6,29 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "db:migrate": "ts-node scripts/migrate.ts",
+    "db:seed": "ts-node scripts/seed.ts",
+    "db:reset": "ts-node scripts/reset.ts"
   },
   "dependencies": {
+    "@radix-ui/react-slot": "^1.2.3",
+    "@supabase/supabase-js": "^2.49.8",
+    "class-variance-authority": "^0.7.1",
+    "lucide-react": "^0.516.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "@supabase/supabase-js": "^2.49.8"
+    "react-router-dom": "^7.6.2",
+    "tailwind-merge": "^3.3.1",
+    "zod": "^3.22.4"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
+    "@types/pg": "^8.11.0",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "pg": "^8.11.3",
+    "ts-node": "^10.9.2",
     "typescript": "~5.7.2",
     "vite": "^6.2.0"
   }

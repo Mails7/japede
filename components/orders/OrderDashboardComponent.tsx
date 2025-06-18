@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../../contexts/AppContext';
 import { Order, OrderStatus, OrderType, CashRegisterSessionStatus } from '../../types';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Button } from '../ui/button';
-import { ArrowsExpandIcon, XIcon, PlusIcon, RefreshIcon } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '../../src/components/ui/card';
+import { Button } from '../../src/components/ui/button';
+import { ExpandIcon, XIcon, PlusIcon, RefreshCwIcon } from 'lucide-react';
 import OrderCardComponent from './OrderCard';
 import ManualOrderFormModal from '../shared/ManualOrderFormModal';
 
@@ -67,7 +67,7 @@ const OrderDashboardComponent: React.FC = () => {
             className="bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out flex items-center"
             title="Forçar verificação de transições automáticas"
           >
-            <RefreshIcon className="w-5 h-5 mr-2" /> Atualizar Fluxo
+            <RefreshCwIcon className="w-5 h-5 mr-2" /> Atualizar Fluxo
           </Button>
         </div>
       </div>
@@ -123,7 +123,7 @@ const OrderDashboardComponent: React.FC = () => {
                   title={isExpanded ? "Recolher coluna" : "Expandir coluna"}
                   aria-label={isExpanded ? "Recolher coluna" : "Expandir coluna"}
                 >
-                  {isExpanded ? <XIcon className="w-5 h-5" /> : <ArrowsExpandIcon className="w-5 h-5" />}
+                  {isExpanded ? <XIcon className="w-5 h-5" /> : <ExpandIcon className="w-5 h-5" />}
                 </button>
               </h3>
               <div className={`

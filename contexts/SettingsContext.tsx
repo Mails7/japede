@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useReducer, useEffect, ReactNode, useCallback } from 'react';
 import { supabase, getArray, handleSupabaseError } from '../services/supabaseClient';
 import { AppSettings, StoreSettings, PaymentSettings, WhatsAppSettings, NotificationSettings, OpeningHoursEntry, DeliveryFeeType } from '../types';
@@ -130,75 +129,71 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
     try {
       const { data, error } = await supabase
         .from('app_settings')
-        .select('settings_data') // Select the JSONB column
+        .select('settings_data')
         .eq('id', 'default_settings')
         .single();
 
       if (error) {
         if (error.message.includes('relation "public.app_settings" does not exist')) {
-            console.warn("[SettingsContext] CRITICAL: Tabela 'app_settings' não encontrada no banco de dados.");
-            setAlert({ 
-                message: "Atenção: A tabela de configurações ('app_settings') não foi encontrada. Usando configurações padrão. Crie a tabela no Supabase para salvar as configurações.", 
-                type: 'error',
-            });
-            dispatch({ type: 'FETCH_SETTINGS_SUCCESS', payload: defaultAppSettings }); // Use defaults
-            dispatch({ type: 'SET_SETTINGS_TABLE_MISSING', payload: true });
-            return;
-        } else if (error.code !== 'PGRST116') { // PGRST116: "Searched for a single row, but found 0 rows" - this is NOT an error for us here
-            console.error("[SettingsContext] Falha ao buscar configurações.:", error.message);
-            dispatch({ type: 'FETCH_SETTINGS_FAILURE', payload: error.message });
-            setAlert({ message: `Falha ao buscar configurações: ${error.message}`, type: 'error'});
-            return;
+          console.warn("[SettingsContext] CRÍTICO: Tabela 'app_settings' não encontrada no banco de dados.");
+          setAlert({ 
+            message: "Atenção: A tabela de configurações ('app_settings') não foi encontrada. Usando configurações padrão. Por favor, execute o script de migração do banco de dados para criar a tabela necessária.", 
+            type: 'error',
+          });
+          dispatch({ type: 'FETCH_SETTINGS_SUCCESS', payload: defaultAppSettings });
+          dispatch({ type: 'SET_SETTINGS_TABLE_MISSING', payload: true });
+          return;
+        } else if (error.code !== 'PGRST116') {
+          console.error("[SettingsContext] Erro ao buscar configurações:", error.message);
+          dispatch({ type: 'FETCH_SETTINGS_FAILURE', payload: error.message });
+          setAlert({ 
+            message: `Erro ao buscar configurações: ${error.message}. Por favor, tente novamente mais tarde.`, 
+            type: 'error'
+          });
+          return;
         }
       }
-      
-      dispatch({ type: 'SET_SETTINGS_TABLE_MISSING', payload: false }); 
 
-      if (data && data.settings_data) {
-        const fetched = data.settings_data as Partial<AppSettings>;
-        const safeFetchedStore = (typeof fetched.store === 'object' && fetched.store !== null) ? fetched.store : {};
-        const safeFetchedPayments = (typeof fetched.payments === 'object' && fetched.payments !== null) ? fetched.payments : {};
-        const safeFetchedWhatsApp = (typeof fetched.whatsapp === 'object' && fetched.whatsapp !== null) ? fetched.whatsapp : {};
-        const safeFetchedNotifications = (typeof fetched.notifications === 'object' && fetched.notifications !== null) ? fetched.notifications : {};
-        
-        const mergedSettings: AppSettings = {
-            ...defaultAppSettings, 
-            ...fetched, // Spread fetched data which might include n8n_api_key
-            store: { ...defaultAppSettings.store, ...safeFetchedStore },
-            payments: { ...defaultAppSettings.payments, ...safeFetchedPayments },
-            whatsapp: { ...defaultAppSettings.whatsapp, ...safeFetchedWhatsApp },
-            notifications: { ...defaultAppSettings.notifications, ...safeFetchedNotifications },
-            id: 'default_settings', // Ensure ID is always default_settings
-            n8n_api_key: fetched.n8n_api_key !== undefined ? fetched.n8n_api_key : defaultAppSettings.n8n_api_key, // Explicitly handle n8n_api_key
-        };
-        dispatch({ type: 'FETCH_SETTINGS_SUCCESS', payload: mergedSettings });
+      if (data?.settings_data) {
+        dispatch({ type: 'FETCH_SETTINGS_SUCCESS', payload: data.settings_data });
+        dispatch({ type: 'SET_SETTINGS_TABLE_MISSING', payload: false });
       } else {
-        console.log("[SettingsContext] Nenhuma configuração encontrada para 'default_settings', usando e tentando salvar padrões.");
+        console.log("[SettingsContext] Nenhuma configuração encontrada, usando e salvando configurações padrão.");
         dispatch({ type: 'FETCH_SETTINGS_SUCCESS', payload: defaultAppSettings });
         
-        if (!state.settingsTableMissing) { 
-            console.log("[SettingsContext] Tabela 'app_settings' existe, tentando salvar configurações padrão (ID: default_settings).");
-            // The `settings_data` column should store the entire AppSettings object.
-            const { error: upsertError } = await supabase.from('app_settings').upsert({ id: 'default_settings', settings_data: defaultAppSettings });
-            if (upsertError) {
-                 // Log em inglês para o console do desenvolvedor
-                 console.error(`[SettingsContext] RLS VIOLATION - Default Settings Save Failed: Unable to save default settings (ID: 'default_settings') to the 'app_settings' table. Supabase RLS policies prevented the write operation. Error: "${upsertError.message}". The application will proceed using internal default settings. ACTION REQUIRED: To persist settings, modify the RLS policies on the 'app_settings' table in your Supabase dashboard to allow INSERT/UPDATE for the 'default_settings' row by the relevant role (e.g., 'anon', 'authenticated').`);
-                 if (upsertError.message.toLowerCase().includes("violates row-level security policy")) {
-                    // Alerta da UI em português
-                    setAlert({ 
-                        message: `VIOLAÇÃO DE RLS - Falha ao Salvar Configurações Padrão: Não foi possível salvar as configurações padrão (ID: 'default_settings') na tabela 'app_settings'. As políticas de RLS do Supabase impediram a operação de escrita. Erro: "${upsertError.message}". A aplicação continuará usando as configurações padrão internas. AÇÃO NECESSÁRIA: Para persistir as configurações, modifique as políticas RLS da tabela 'app_settings' no seu painel Supabase para permitir operações de INSERT/UPDATE para a linha 'default_settings' pela role relevante (ex: 'anon', 'authenticated').`,
-                        type: 'error' 
-                    });
-                 } else {
-                    setAlert({ message: `Falha ao inicializar configurações no banco: ${upsertError.message}`, type: 'error' });
-                 }
+        if (!state.settingsTableMissing) {
+          const { error: upsertError } = await supabase
+            .from('app_settings')
+            .upsert({ 
+              id: 'default_settings', 
+              settings_data: defaultAppSettings,
+              updated_at: new Date().toISOString()
+            });
+
+          if (upsertError) {
+            console.error("[SettingsContext] Erro ao salvar configurações padrão:", upsertError.message);
+            if (upsertError.message.toLowerCase().includes("violates row-level security policy")) {
+              setAlert({ 
+                message: "Erro de permissão: Não foi possível salvar as configurações padrão. Verifique as políticas de segurança do banco de dados.", 
+                type: 'error' 
+              });
+            } else {
+              setAlert({ 
+                message: `Erro ao salvar configurações: ${upsertError.message}. Por favor, tente novamente mais tarde.`, 
+                type: 'error' 
+              });
             }
+          }
         }
       }
     } catch (e) {
-      const errorMsg = (e as Error).message;
+      const errorMsg = e instanceof Error ? e.message : 'Erro desconhecido';
+      console.error("[SettingsContext] Erro inesperado:", errorMsg);
       dispatch({ type: 'FETCH_SETTINGS_FAILURE', payload: errorMsg });
-      setAlert({ message: `Erro ao buscar configurações: ${errorMsg}`, type: 'error' });
+      setAlert({ 
+        message: `Erro inesperado ao buscar configurações: ${errorMsg}. Por favor, tente novamente mais tarde.`, 
+        type: 'error' 
+      });
     }
   }, [setAlert, state.settingsTableMissing]);
 

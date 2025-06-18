@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../../contexts/AppContext';
 import { Order, OrderStatus } from '../../types';
-import { Card, CardContent } from '../ui/card';
-import { Button } from '../ui/button';
-import { FireIcon, CheckCircleIcon, ClockIcon, PlayIcon, PauseIcon, RefreshIcon } from 'lucide-react';
+import { Card, CardContent } from '../../src/components/ui/card';
+import { Button } from '../../src/components/ui/button';
+import { FlameIcon, CheckCircleIcon, ClockIcon, PlayIcon, PauseIcon, RefreshCwIcon } from 'lucide-react';
 import ProgressBar from '../shared/ProgressBar';
 
 const KitchenDisplayComponent: React.FC = () => {
@@ -161,7 +161,7 @@ const KitchenDisplayComponent: React.FC = () => {
           >
             {order.status === OrderStatus.PENDING ? 'Iniciar Preparo' : 'Marcar como Pronto'}
             {order.status === OrderStatus.PENDING ? 
-              <FireIcon className="w-4 h-4 ml-2"/> : 
+              <FlameIcon className="w-4 h-4 ml-2"/> : 
               <CheckCircleIcon className="w-4 h-4 ml-2"/>
             }
           </button>
@@ -180,7 +180,7 @@ const KitchenDisplayComponent: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-wrap justify-between items-center gap-4">
         <div className="flex items-center space-x-2">
-          <FireIcon className="w-8 h-8 text-red-500" />
+          <FlameIcon className="w-8 h-8 text-red-500" />
           <h1 className="text-3xl font-semibold text-gray-800">Painel da Cozinha</h1>
         </div>
         <Button
@@ -188,7 +188,7 @@ const KitchenDisplayComponent: React.FC = () => {
           className="bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out flex items-center"
           title="Forçar verificação de transições automáticas"
         >
-          <RefreshIcon className="w-5 h-5 mr-2" /> Atualizar Fluxo
+          <RefreshCwIcon className="w-5 h-5 mr-2" /> Atualizar Fluxo
         </Button>
       </div>
       
@@ -226,7 +226,7 @@ const KitchenDisplayComponent: React.FC = () => {
         
         <div className="bg-gray-100 p-3 rounded-lg">
           <h2 className="text-xl font-semibold text-blue-600 mb-3 flex items-center">
-            <FireIcon className="w-5 h-5 mr-2"/> Em Preparo ({preparingOrders.length})
+            <FlameIcon className="w-5 h-5 mr-2"/> Em Preparo ({preparingOrders.length})
           </h2>
           <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
             {preparingOrders.map(order => {

@@ -1,6 +1,6 @@
 import React from 'react';
-import { useAppContext } from '../../contexts/AppContext';
-import OrderDashboardComponent from '../../components/orders/OrderDashboardComponent';
+import { useAppContext } from '../contexts/AppContext';
+import OrderDashboardComponent from '../components/orders/OrderDashboardComponent';
 
 const OrderDashboardPage: React.FC = () => {
   const { isLoading } = useAppContext();
