@@ -1,7 +1,6 @@
-
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenerativeAI } from "npm:@google/generative-ai";
 // To use HarmCategory and HarmBlockThreshold, uncomment the line below and ensure they are used.
-// import { HarmCategory, HarmBlockThreshold } from "@google/genai";
+// import { HarmCategory, HarmBlockThreshold } from "npm:@google/generative-ai";
 
 // Standard CORS headers. Adjust 'Access-Control-Allow-Origin' for production.
 const corsHeaders = {
@@ -17,17 +16,17 @@ console.log('Supabase Edge Function: generate-description initialized.');
 // @ts-ignore: Deno is a global provided by the Supabase Edge Function environment
 const GEMINI_API_KEY = Deno.env.get("API_KEY");
 
-let ai: GoogleGenAI | null = null;
+let ai: GoogleGenerativeAI | null = null;
 
 if (!GEMINI_API_KEY) {
   console.error("[Critical] Gemini API Key (API_KEY) is not set in Edge Function environment variables.");
   // ai remains null, and the handler will return an error if a POST request is made.
 } else {
   try {
-    ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
-    console.log("GoogleGenAI client initialized successfully in Edge Function.");
+    ai = new GoogleGenerativeAI(GEMINI_API_KEY);
+    console.log("GoogleGenerativeAI client initialized successfully in Edge Function.");
   } catch (e) {
-    console.error("Error initializing GoogleGenAI client in Edge Function:", e);
+    console.error("Error initializing GoogleGenerativeAI client in Edge Function:", e);
     ai = null; // Ensure ai is null if initialization fails
   }
 }
@@ -79,14 +78,11 @@ async function handler(req: Request): Promise<Response> {
   console.log(`Generating content for model: ${modelName} with prompt for item: "${itemName}"`);
 
   try {
-    const genAIResponse = await ai.models.generateContent({
-      model: modelName,
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
-      // Optional: Add safetySettings or generationConfig if needed
-      // config: { temperature: 0.7, topP: 0.9, topK: 40 } // Example config
-    });
+    const model = ai.getGenerativeModel({ model: modelName });
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const description = response.text();
     
-    const description = genAIResponse.text; // Accessing .text directly
     console.log("Gemini API response received. Description:", description);
 
     if (description === undefined || description === null || description.trim() === "") {

@@ -56,7 +56,24 @@ const request = async <T>(
         return null as T; // Or handle as appropriate for your app
     }
 
-    const responseData = await response.json();
+    let responseData;
+    const contentType = response.headers.get('content-type');
+    
+    if (contentType && contentType.includes('application/json')) {
+      responseData = await response.json();
+    } else {
+      // Handle non-JSON responses (like HTML error pages)
+      const textResponse = await response.text();
+      console.error(`[apiClient] Non-JSON response from ${method} ${endpoint}:`, textResponse.substring(0, 200));
+      
+      if (!response.ok) {
+        throw new Error(`Erro do servidor: ${response.status} ${response.statusText}. Verifique se a URL do Supabase está correta.`);
+      }
+      
+      // If it's a successful non-JSON response, try to handle it gracefully
+      responseData = { message: textResponse };
+    }
+    
     console.log(`[apiClient] Response from ${method} ${API_BASE_URL}${endpoint}:`, response.status, responseData);
 
 
