@@ -354,7 +354,7 @@ server {
     }
     
     # API proxy para Supabase (se necessário)
-    location /api/ {
+    location /japede-cardapio/api/ {
         proxy_pass $SUPABASE_URL/;
         proxy_http_version 1.1;
         proxy_set_header Upgrade \$http_upgrade;

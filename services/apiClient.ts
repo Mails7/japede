@@ -2,7 +2,7 @@
 // services/apiClient.ts
 import { AlertInfo } from '../types';
 
-const API_BASE_URL = '/api'; // Configure a base URL da sua API de backend
+const API_BASE_URL = '/japede-cardapio/api'; // Configure a base URL da sua API de backend
 
 interface ApiErrorResponse {
   message: string;
