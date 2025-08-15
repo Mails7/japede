@@ -8,7 +8,7 @@ import { ClockIcon, TruckIcon, CheckCircleIcon, BanIcon, FireIcon } from './comp
 // This model name might be used by the backend when it calls the Gemini API.
 export const GEMINI_MODEL_NAME = 'gemini-2.5-flash-preview-04-17'; 
 // This endpoint assumes your custom backend will have a route to proxy requests to the Gemini API.
-export const GEMINI_API_ENDPOINT = '/api/generate-description'; 
+export const GEMINI_API_ENDPOINT = '/japede-cardapio/api/functions/v1/generate-description';
 
 export const DEFAULT_PIZZA_IMAGE = 'https://picsum.photos/seed/pizza-default/400/250';
 
